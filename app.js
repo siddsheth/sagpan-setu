@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let tempEditPhotoBase64 = "";
 
     // Admin Access Passcode
-    // const ADMIN_PASSCODE = "admin123";
+    const ADMIN_PASSCODE = "admin123";
 
     // ==========================================
     // 2. DOM ELEMENTS
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Admin Login
     const adminLoginView = document.getElementById('admin-login-view');
     const adminLoginForm = document.getElementById('admin-login-form');
-    const adminEmailInput = document.getElementById('admin-email');
+    // const adminEmailInput = document.getElementById('admin-email');
     const adminPasscodeInput = document.getElementById('admin-passcode');
     const loginErrorMsg = document.getElementById('login-error-msg');
     
@@ -1312,77 +1312,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     adminLoginForm.addEventListener('submit', async (e) => {
-        // e.preventDefault();
-        // const inputPass = adminPasscodeInput.value.trim();
-
-        // if (inputPass === ADMIN_PASSCODE) {
-        //     sessionStorage.setItem('soulsync_admin_auth', 'true');
-        //     loginErrorMsg.style.display = 'none';
-        //     showAdminDashboard();
-        // } else {
-        //     loginErrorMsg.style.display = 'block';
-        //     adminPasscodeInput.value = '';
-        // }
         e.preventDefault();
-        
-        const email = adminEmailInput.value.trim();
-        const password = adminPasscodeInput.value;
-        
-        // Ensure error messages are cleared initially
-        loginErrorMsg.style.display = 'none';
-        loginErrorMsg.textContent = '';
+        const inputPass = adminPasscodeInput.value.trim();
 
-        // Check if Supabase is active
-        if (!isSupabaseEnabled || !supabaseClient) {
-            loginErrorMsg.textContent = "ડેટાબેઝ જોડાણ ઉપલબ્ધ નથી (Supabase Offline).";
+        if (inputPass === ADMIN_PASSCODE) {
+            sessionStorage.setItem('soulsync_admin_auth', 'true');
+            loginErrorMsg.style.display = 'none';
+            showAdminDashboard();
+        } else {
             loginErrorMsg.style.display = 'block';
-            return;
+            adminPasscodeInput.value = '';
         }
+        // e.preventDefault();
+        
+        // const email = adminEmailInput.value.trim();
+        // const password = adminPasscodeInput.value;
+        
+        // // Ensure error messages are cleared initially
+        // loginErrorMsg.style.display = 'none';
+        // loginErrorMsg.textContent = '';
 
-        try {
-            // Use Supabase authentication system
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+        // // Check if Supabase is active
+        // if (!isSupabaseEnabled || !supabaseClient) {
+        //     loginErrorMsg.textContent = "ડેટાબેઝ જોડાણ ઉપલબ્ધ નથી (Supabase Offline).";
+        //     loginErrorMsg.style.display = 'block';
+        //     return;
+        // }
 
-            if (error) {
-                throw error;
-            }
+        // try {
+        //     // Use Supabase authentication system
+        //     const { data, error } = await supabaseClient.auth.signInWithPassword({
+        //         email: email,
+        //         password: password,
+        //     });
 
-            // Successful Login
-            if (data.user) {
-                // Save token tracking to SessionStorage
-                sessionStorage.setItem('soulsync_admin_auth', 'true');
-                sessionStorage.setItem('soulsync_admin_user', JSON.stringify(data.user));
+        //     if (error) {
+        //         throw error;
+        //     }
+
+        //     // Successful Login
+        //     if (data.user) {
+        //         // Save token tracking to SessionStorage
+        //         sessionStorage.setItem('soulsync_admin_auth', 'true');
+        //         sessionStorage.setItem('soulsync_admin_user', JSON.stringify(data.user));
                 
-                // Clear inputs
-                adminEmailInput.value = '';
-                adminPasscodeInput.value = '';
+        //         // Clear inputs
+        //         adminEmailInput.value = '';
+        //         adminPasscodeInput.value = '';
                 
-                // Transition UI view into Admin Dashboard
-                showAdminDashboard();
-            }
-        } catch (err) {
-            console.error("Authentication error:", err);
-            // Translate or display meaningful error to the admin user
-            loginErrorMsg.textContent = "ખોટો ઈમેઈલ અથવા પાસવર્ડ! કૃપા કરીને ફરીથી પ્રયાસ કરો.";
-            loginErrorMsg.style.display = 'block';
-        }
+        //         // Transition UI view into Admin Dashboard
+        //         showAdminDashboard();
+        //     }
+        // } catch (err) {
+        //     console.error("Authentication error:", err);
+        //     // Translate or display meaningful error to the admin user
+        //     loginErrorMsg.textContent = "ખોટો ઈમેઈલ અથવા પાસવર્ડ! કૃપા કરીને ફરીથી પ્રયાસ કરો.";
+        //     loginErrorMsg.style.display = 'block';
+        // }
     });
 
     adminLogoutBtn.addEventListener('click', () => {
-        // sessionStorage.removeItem('soulsync_admin_auth');
-        // showAdminLogin();
-       if (isSupabaseEnabled && supabaseClient) {
-            await supabaseClient.auth.signOut();
-        }
         sessionStorage.removeItem('soulsync_admin_auth');
-        sessionStorage.removeItem('soulsync_admin_user');
+        showAdminLogin();
+       // if (isSupabaseEnabled && supabaseClient) {
+       //      await supabaseClient.auth.signOut();
+       //  }
+       //  sessionStorage.removeItem('soulsync_admin_auth');
+       //  sessionStorage.removeItem('soulsync_admin_user');
         
-        // Go back to login screen or default directory view
-        adminDashboardView.style.display = 'none';
-        adminLoginView.style.display = 'block';
+       //  // Go back to login screen or default directory view
+       //  adminDashboardView.style.display = 'none';
+       //  adminLoginView.style.display = 'block';
     });
 
     // ==========================================
