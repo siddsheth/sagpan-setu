@@ -288,8 +288,16 @@
                     <p>બાયો-ડેટા મંજૂર કરવા અને ડિરેક્ટરી મેનેજ કરવા માટે એડમિન પાસકોડ દાખલ કરો.</p>
                     
                     <form id="admin-login-form">
-                        <div class="form-field">
+                        <!-- <div class="form-field">
                             <input type="password" id="admin-passcode" placeholder="એડમિન પાસકોડ દાખલ કરો" required>
+                        </div> -->
+                        <div class="form-field">
+                            <label for="admin-email">એડમિન ઈમેઈલ (Admin Email) <span class="required">*</span></label>
+                            <input type="email" id="admin-email" required placeholder="દા.ત. admin@email.com">
+                        </div>
+                        <div class="form-field">
+                            <label for="admin-passcode">પાસવર્ડ (Password) <span class="required">*</span></label>
+                            <input type="password" id="admin-passcode" required placeholder="તમારો પાસવર્ડ દાખલ કરો">
                         </div>
                         <div id="login-error-msg" class="error-text" style="display: none;">ખોટો પાસકોડ. કૃપા કરીને ફરી પ્રયાસ કરો.</div>
                         <button type="submit" class="primary-btn login-btn">લોગ ઇન કરો</button>
