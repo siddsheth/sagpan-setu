@@ -450,52 +450,113 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filtered.forEach(profile => {
+        //     const isBookmarked = bookmarkedIds.has(profile.id);
+        //     const cardEl = document.createElement('div');
+        //     cardEl.className = 'profile-card';
+            
+        //     let avatarHtml = '';
+        //     if (profile.photoUrl) {
+        //         avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="avatar-image">`;
+        //     } else {
+        //         avatarHtml = getInitials(profile.name);
+        //     }
+
+        //     cardEl.innerHTML = `
+        //         <div class="profile-card-header">
+        //             <div class="avatar-circle" style="${profile.photoUrl ? '' : 'background: ' + getGradientByName(profile.name)}">
+        //                 ${avatarHtml}
+        //             </div>
+        //             <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" data-id="${profile.id}" title="${isBookmarked ? 'મનપસંદમાંથી દૂર કરો' : 'મનપસંદ કરો'}">
+        //                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+        //                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        //                 </svg>
+        //             </button>
+        //         </div>
+        //         <div class="profile-card-body">
+        //             <span class="profile-gender-badge">${profile.gender}</span>
+        //             <h3 class="profile-card-name">${profile.name}</h3>
+        //             <span class="profile-card-meta">${profile.age} વર્ષ</span>
+                    
+        //             <div class="profile-details-grid">
+        //                 <span class="detail-row-lbl">શહેર:</span>
+        //                 <span class="detail-row-val">${profile.city}</span>
+                        
+        //                 <span class="detail-row-lbl">રાજ્ય:</span>
+        //                 <span class="detail-row-val">${profile.state}</span>
+        //             </div>
+        //         </div>
+        //         <div class="profile-card-footer">
+        //             <button class="primary-btn w-100 view-pdf-trigger-btn" data-id="${profile.id}">
+        //                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        //                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        //                     <polyline points="14 2 14 8 20 8"></polyline>
+        //                 </svg>
+        //                 બાયો-ડેટા જુઓ
+        //             </button>
+        //         </div>
+        //     `;
+            
+        //     cardEl.querySelector('.bookmark-btn').addEventListener('click', (e) => {
+        //         e.stopPropagation();
+        //         toggleBookmark(profile.id, e.currentTarget);
+        //     });
+
+        //     cardEl.querySelector('.view-pdf-trigger-btn').addEventListener('click', () => {
+        //         openProfileModal(profile);
+        //     });
+
+        //     profilesGrid.appendChild(cardEl);
+
             const isBookmarked = bookmarkedIds.has(profile.id);
             const cardEl = document.createElement('div');
-            cardEl.className = 'profile-card';
+            // Changed class name to horizontal variant
+            cardEl.className = 'profile-card-horizontal'; 
             
             let avatarHtml = '';
             if (profile.photoUrl) {
-                avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="avatar-image">`;
+                avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="horizontal-avatar-image">`;
             } else {
                 avatarHtml = getInitials(profile.name);
             }
 
+            // New Clean Dashboard Horizontal Layout
             cardEl.innerHTML = `
-                <div class="profile-card-header">
-                    <div class="avatar-circle" style="${profile.photoUrl ? '' : 'background: ' + getGradientByName(profile.name)}">
+                <div class="horizontal-card-left">
+                    <div class="horizontal-avatar-container" style="${profile.photoUrl ? '' : 'background: ' + getGradientByName(profile.name)}">
                         ${avatarHtml}
                     </div>
-                    <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" data-id="${profile.id}" title="${isBookmarked ? 'મનપસંદમાંથી દૂર કરો' : 'મનપસંદ કરો'}">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
-                    </button>
                 </div>
-                <div class="profile-card-body">
-                    <span class="profile-gender-badge">${profile.gender}</span>
-                    <h3 class="profile-card-name">${profile.name}</h3>
-                    <span class="profile-card-meta">${profile.age} વર્ષ</span>
-                    
-                    <div class="profile-details-grid">
-                        <span class="detail-row-lbl">શહેર:</span>
-                        <span class="detail-row-val">${profile.city}</span>
+                
+                <div class="horizontal-card-right">
+                    <div class="horizontal-card-main-content">
+                        <div class="horizontal-card-header">
+                            <h3 class="horizontal-profile-name">${profile.name}</h3>
+                            <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" data-id="${profile.id}" title="${isBookmarked ? 'મનપસંદમાંથી દૂર કરો' : 'મનપસંદ કરો'}">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                            </button>
+                        </div>
                         
-                        <span class="detail-row-lbl">રાજ્ય:</span>
-                        <span class="detail-row-val">${profile.state}</span>
+                        <div class="horizontal-meta-row">
+                            <span class="meta-pill age-pill">${profile.age} વર્ષ</span>
+                            <span class="meta-pill location-pill">📍 ${profile.city}, ${profile.state}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="profile-card-footer">
-                    <button class="primary-btn w-100 view-pdf-trigger-btn" data-id="${profile.id}">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                        </svg>
-                        બાયો-ડેટા જુઓ
-                    </button>
+                    
+                    <div class="horizontal-card-footer">
+                        <button class="primary-btn w-100 view-pdf-trigger-btn" data-id="${profile.id}">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            બાયો-ડેટા જુઓ
+                        </button>
+                    </div>
                 </div>
             `;
             
+            // Event listeners remain completely identical to keep functionality intact
             cardEl.querySelector('.bookmark-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 toggleBookmark(profile.id, e.currentTarget);
