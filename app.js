@@ -800,24 +800,57 @@ document.addEventListener('DOMContentLoaded', () => {
             bookmarkText.textContent = "મનપસંદ કરો";
         }
 
-        const newBookmarkBtn = modalBookmarkBtn.cloneNode(true);
-        modalBookmarkBtn.parentNode.replaceChild(newBookmarkBtn, modalBookmarkBtn);
+        // const newBookmarkBtn = modalBookmarkBtn.cloneNode(true);
+        // modalBookmarkBtn.parentNode.replaceChild(newBookmarkBtn, modalBookmarkBtn);
         
-        const activeModalBookmarkBtn = document.getElementById('modal-bookmark-btn');
-        activeModalBookmarkBtn.addEventListener('click', () => {
+        // const activeModalBookmarkBtn = document.getElementById('modal-bookmark-btn');
+        // activeModalBookmarkBtn.addEventListener('click', () => {
+        //     const wasBookmarked = bookmarkedIds.has(profile.id);
+        //     if (wasBookmarked) {
+        //         bookmarkedIds.delete(profile.id);
+        //         activeModalBookmarkBtn.classList.remove('bookmarked');
+        //         activeModalBookmarkBtn.querySelector('svg').style.fill = 'none';
+        //         activeModalBookmarkBtn.querySelector('svg').style.color = 'currentColor';
+        //         activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદ કરો";
+        //     } else {
+        //         bookmarkedIds.add(profile.id);
+        //         activeModalBookmarkBtn.classList.add('bookmarked');
+        //         activeModalBookmarkBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+        //         activeModalBookmarkBtn.querySelector('svg').style.color = 'var(--color-heart)';
+        //         activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદમાં છે";
+        //     }
+        //     saveBookmarks();
+            
+        //     const cardBtn = document.querySelector(`.bookmark-btn[data-id="${profile.id}"]`);
+        //     if (cardBtn) {
+        //         if (bookmarkedIds.has(profile.id)) {
+        //             cardBtn.classList.add('bookmarked');
+        //             cardBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+        //         } else {
+        //             cardBtn.classList.remove('bookmarked');
+        //             cardBtn.querySelector('svg').style.fill = 'none';
+        //         }
+        //     }
+        //     if (filters.bookmarksOnly) {
+        //         renderProfilesGrid();
+        //     }
+        // });
+
+       // Directly overwrite the onclick handler to instantly wipe out previous click listeners
+        modalBookmarkBtn.onclick = () => {
             const wasBookmarked = bookmarkedIds.has(profile.id);
             if (wasBookmarked) {
                 bookmarkedIds.delete(profile.id);
-                activeModalBookmarkBtn.classList.remove('bookmarked');
-                activeModalBookmarkBtn.querySelector('svg').style.fill = 'none';
-                activeModalBookmarkBtn.querySelector('svg').style.color = 'currentColor';
-                activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદ કરો";
+                modalBookmarkBtn.classList.remove('bookmarked');
+                modalBookmarkBtn.querySelector('svg').style.fill = 'none';
+                modalBookmarkBtn.querySelector('svg').style.color = 'currentColor';
+                modalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદ કરો";
             } else {
                 bookmarkedIds.add(profile.id);
-                activeModalBookmarkBtn.classList.add('bookmarked');
-                activeModalBookmarkBtn.querySelector('svg').style.fill = 'var(--color-heart)';
-                activeModalBookmarkBtn.querySelector('svg').style.color = 'var(--color-heart)';
-                activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદમાં છે";
+                modalBookmarkBtn.classList.add('bookmarked');
+                modalBookmarkBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+                modalBookmarkBtn.querySelector('svg').style.color = 'var(--color-heart)';
+                modalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદમાં છે";
             }
             saveBookmarks();
             
@@ -834,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filters.bookmarksOnly) {
                 renderProfilesGrid();
             }
-        });
+        };
 
         modalDownloadBtn.href = profile.pdfUrl;
         const fileExt = profile.isImageBioData ? 'png' : 'pdf';
