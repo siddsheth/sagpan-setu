@@ -769,83 +769,151 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
 
     function openProfileModal(profile) {
-        if (profile.photoUrl) {
-            modalAvatar.style.background = 'none';
-            modalAvatar.innerHTML = `<img src="${profile.photoUrl}" alt="${profile.name}" class="avatar-image">`;
-        } else {
-            modalAvatar.innerHTML = '';
-            modalAvatar.textContent = getInitials(profile.name);
-            modalAvatar.style.background = getGradientByName(profile.name);
-        }
+        // if (profile.photoUrl) {
+        //     modalAvatar.style.background = 'none';
+        //     modalAvatar.innerHTML = `<img src="${profile.photoUrl}" alt="${profile.name}" class="avatar-image">`;
+        // } else {
+        //     modalAvatar.innerHTML = '';
+        //     modalAvatar.textContent = getInitials(profile.name);
+        //     modalAvatar.style.background = getGradientByName(profile.name);
+        // }
 
-        modalName.textContent = profile.name;
-        modalGender.textContent = profile.gender;
-        modalAge.textContent = `${profile.age} વર્ષ`;
-        modalCity.textContent = profile.city;
-        modalState.textContent = profile.state;
+        // modalName.textContent = profile.name;
+        // modalGender.textContent = profile.gender;
+        // modalAge.textContent = `${profile.age} વર્ષ`;
+        // modalCity.textContent = profile.city;
+        // modalState.textContent = profile.state;
 
-        const isBookmarked = bookmarkedIds.has(profile.id);
-        const heartSvg = modalBookmarkBtn.querySelector('svg');
-        const bookmarkText = modalBookmarkBtn.querySelector('.btn-text');
+        // const isBookmarked = bookmarkedIds.has(profile.id);
+        // const heartSvg = modalBookmarkBtn.querySelector('svg');
+        // const bookmarkText = modalBookmarkBtn.querySelector('.btn-text');
         
-        if (isBookmarked) {
-            modalBookmarkBtn.classList.add('bookmarked');
-            heartSvg.style.fill = 'var(--color-heart)';
-            heartSvg.style.color = 'var(--color-heart)';
-            bookmarkText.textContent = "મનપસંદમાં છે";
-        } else {
-            modalBookmarkBtn.classList.remove('bookmarked');
-            heartSvg.style.fill = 'none';
-            heartSvg.style.color = 'currentColor';
-            bookmarkText.textContent = "મનપસંદ કરો";
-        }
+        // if (isBookmarked) {
+        //     modalBookmarkBtn.classList.add('bookmarked');
+        //     heartSvg.style.fill = 'var(--color-heart)';
+        //     heartSvg.style.color = 'var(--color-heart)';
+        //     bookmarkText.textContent = "મનપસંદમાં છે";
+        // } else {
+        //     modalBookmarkBtn.classList.remove('bookmarked');
+        //     heartSvg.style.fill = 'none';
+        //     heartSvg.style.color = 'currentColor';
+        //     bookmarkText.textContent = "મનપસંદ કરો";
+        // }
 
-        const newBookmarkBtn = modalBookmarkBtn.cloneNode(true);
-        modalBookmarkBtn.parentNode.replaceChild(newBookmarkBtn, modalBookmarkBtn);
+        // const newBookmarkBtn = modalBookmarkBtn.cloneNode(true);
+        // modalBookmarkBtn.parentNode.replaceChild(newBookmarkBtn, modalBookmarkBtn);
         
-        const activeModalBookmarkBtn = document.getElementById('modal-bookmark-btn');
-        activeModalBookmarkBtn.addEventListener('click', () => {
-            const wasBookmarked = bookmarkedIds.has(profile.id);
-            if (wasBookmarked) {
-                bookmarkedIds.delete(profile.id);
-                activeModalBookmarkBtn.classList.remove('bookmarked');
-                activeModalBookmarkBtn.querySelector('svg').style.fill = 'none';
-                activeModalBookmarkBtn.querySelector('svg').style.color = 'currentColor';
-                activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદ કરો";
-            } else {
-                bookmarkedIds.add(profile.id);
-                activeModalBookmarkBtn.classList.add('bookmarked');
-                activeModalBookmarkBtn.querySelector('svg').style.fill = 'var(--color-heart)';
-                activeModalBookmarkBtn.querySelector('svg').style.color = 'var(--color-heart)';
-                activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદમાં છે";
-            }
-            saveBookmarks();
+        // const activeModalBookmarkBtn = document.getElementById('modal-bookmark-btn');
+        // activeModalBookmarkBtn.addEventListener('click', () => {
+        //     const wasBookmarked = bookmarkedIds.has(profile.id);
+        //     if (wasBookmarked) {
+        //         bookmarkedIds.delete(profile.id);
+        //         activeModalBookmarkBtn.classList.remove('bookmarked');
+        //         activeModalBookmarkBtn.querySelector('svg').style.fill = 'none';
+        //         activeModalBookmarkBtn.querySelector('svg').style.color = 'currentColor';
+        //         activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદ કરો";
+        //     } else {
+        //         bookmarkedIds.add(profile.id);
+        //         activeModalBookmarkBtn.classList.add('bookmarked');
+        //         activeModalBookmarkBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+        //         activeModalBookmarkBtn.querySelector('svg').style.color = 'var(--color-heart)';
+        //         activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદમાં છે";
+        //     }
+        //     saveBookmarks();
             
-            const cardBtn = document.querySelector(`.bookmark-btn[data-id="${profile.id}"]`);
-            if (cardBtn) {
-                if (bookmarkedIds.has(profile.id)) {
-                    cardBtn.classList.add('bookmarked');
-                    cardBtn.querySelector('svg').style.fill = 'var(--color-heart)';
-                } else {
-                    cardBtn.classList.remove('bookmarked');
-                    cardBtn.querySelector('svg').style.fill = 'none';
-                }
-            }
-            if (filters.bookmarksOnly) {
-                renderProfilesGrid();
-            }
-        });
+        //     const cardBtn = document.querySelector(`.bookmark-btn[data-id="${profile.id}"]`);
+        //     if (cardBtn) {
+        //         if (bookmarkedIds.has(profile.id)) {
+        //             cardBtn.classList.add('bookmarked');
+        //             cardBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+        //         } else {
+        //             cardBtn.classList.remove('bookmarked');
+        //             cardBtn.querySelector('svg').style.fill = 'none';
+        //         }
+        //     }
+        //     if (filters.bookmarksOnly) {
+        //         renderProfilesGrid();
+        //     }
+        // });
 
-        modalDownloadBtn.href = profile.pdfUrl;
-        const fileExt = profile.isImageBioData ? 'png' : 'pdf';
-        modalDownloadBtn.download = `${profile.name.replace(/\s+/g, '_')}_Biodata.${fileExt}`;
+        // modalDownloadBtn.href = profile.pdfUrl;
+        // const fileExt = profile.isImageBioData ? 'png' : 'pdf';
+        // modalDownloadBtn.download = `${profile.name.replace(/\s+/g, '_')}_Biodata.${fileExt}`;
         
-        modalOpenNewBtn.href = profile.pdfUrl;
+        // modalOpenNewBtn.href = profile.pdfUrl;
 
-        renderBioDataPreview(profile.pdfUrl, profile.isImageBioData, pdfViewerWrapper, pdfFallbackMsg, pdfFallbackOpen);
+        // renderBioDataPreview(profile.pdfUrl, profile.isImageBioData, pdfViewerWrapper, pdfFallbackMsg, pdfFallbackOpen);
 
-        profileModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        // profileModal.classList.add('active');
+        // document.body.style.overflow = 'hidden';
+
+       // Get the LIVE bookmark button directly from the DOM right now
+       const currentBookmarkBtn = document.getElementById('modal-bookmark-btn');
+       
+       const isBookmarked = bookmarkedIds.has(profile.id);
+       const heartSvg = currentBookmarkBtn.querySelector('svg');
+       const bookmarkText = currentBookmarkBtn.querySelector('.btn-text');
+       
+       if (isBookmarked) {
+           currentBookmarkBtn.classList.add('bookmarked');
+           heartSvg.style.fill = 'var(--color-heart)';
+           heartSvg.style.color = 'var(--color-heart)';
+           bookmarkText.textContent = "મનપસંદમાં છે";
+       } else {
+           currentBookmarkBtn.classList.remove('bookmarked');
+           heartSvg.style.fill = 'none';
+           heartSvg.style.color = 'currentColor';
+           bookmarkText.textContent = "મનપસંદ કરો";
+       }
+   
+       // Clone and replace using the current live element reference
+       const newBookmarkBtn = currentBookmarkBtn.cloneNode(true);
+       currentBookmarkBtn.parentNode.replaceChild(newBookmarkBtn, currentBookmarkBtn);
+       
+       // Attach event listener to the freshly swapped button
+       const activeModalBookmarkBtn = document.getElementById('modal-bookmark-btn');
+       activeModalBookmarkBtn.addEventListener('click', () => {
+           const wasBookmarked = bookmarkedIds.has(profile.id);
+           if (wasBookmarked) {
+               bookmarkedIds.delete(profile.id);
+               activeModalBookmarkBtn.classList.remove('bookmarked');
+               activeModalBookmarkBtn.querySelector('svg').style.fill = 'none';
+               activeModalBookmarkBtn.querySelector('svg').style.color = 'currentColor';
+               activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદ કરો";
+           } else {
+               bookmarkedIds.add(profile.id);
+               activeModalBookmarkBtn.classList.add('bookmarked');
+               activeModalBookmarkBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+               activeModalBookmarkBtn.querySelector('svg').style.color = 'var(--color-heart)';
+               activeModalBookmarkBtn.querySelector('.btn-text').textContent = "મનપસંદમાં છે";
+           }
+           saveBookmarks();
+           
+           const cardBtn = document.querySelector(`.bookmark-btn[data-id="${profile.id}"]`);
+           if (cardBtn) {
+               if (bookmarkedIds.has(profile.id)) {
+                   cardBtn.classList.add('bookmarked');
+                   cardBtn.querySelector('svg').style.fill = 'var(--color-heart)';
+               } else {
+                   cardBtn.classList.remove('bookmarked');
+                   cardBtn.querySelector('svg').style.fill = 'none';
+               }
+           }
+           if (filters.bookmarksOnly) {
+               renderProfilesGrid();
+           }
+       });
+   
+       modalDownloadBtn.href = profile.pdfUrl;
+       const fileExt = profile.isImageBioData ? 'png' : 'pdf';
+       modalDownloadBtn.download = `${profile.name.replace(/\s+/g, '_')}_Biodata.${fileExt}`;
+       
+       modalOpenNewBtn.href = profile.pdfUrl;
+   
+       renderBioDataPreview(profile.pdfUrl, profile.isImageBioData, pdfViewerWrapper, pdfFallbackMsg, pdfFallbackOpen);
+   
+       profileModal.classList.add('active');
+       document.body.style.overflow = 'hidden';
     }
 
     function renderBioDataPreview(fileUrl, isImage, wrapperEl, fallbackEl, fallbackOpenEl) {
