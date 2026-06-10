@@ -1660,6 +1660,7 @@ select:focus {
 .horizontal-avatar-image {
     width: 100%;
     height: 100%;
+    object-position: top center;
     object-fit: cover;
     display: block;
 }
