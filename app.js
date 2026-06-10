@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const views = {
         directory: document.getElementById('view-directory'),
         submit: document.getElementById('view-submit'),
+        about: document.getElementById('view-about'),
         admin: document.getElementById('view-admin')
     };
     
