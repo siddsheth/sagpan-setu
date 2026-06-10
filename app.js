@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         search: "",
         gender: "all",
         ageMin: 20,
-        ageMax: 50,
+        ageMax: 80,
         location: "all",
         state: "all",
         bookmarksOnly: false
@@ -602,7 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const genderLbl = filters.gender === 'Male' ? 'પુરુષ' : 'સ્ત્રી';
             activePills.push({ key: 'gender', label: `લિંગ: ${genderLbl}` });
         }
-        if (filters.ageMin > 20 || filters.ageMax < 50) {
+        if (filters.ageMin > 20 || filters.ageMax < 80) {
             activePills.push({ key: 'age', label: `ઉંમર: ${filters.ageMin}-${filters.ageMax}` });
         }
         if (filters.location !== 'all') {
@@ -653,10 +653,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('gender-all').checked = true;
         } else if (key === 'age') {
             filters.ageMin = 20;
-            filters.ageMax = 50;
+            filters.ageMax = 80;
             ageMinInput.value = 20;
-            ageMaxInput.value = 50;
-            ageDisplay.textContent = "20 - 50";
+            ageMaxInput.value = 80;
+            ageDisplay.textContent = "20 - 80";
         } else if (key === 'location') {
             filters.location = "all";
             locationSelect.value = "all";
@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filters.search = "";
         filters.gender = "all";
         filters.ageMin = 20;
-        filters.ageMax = 50;
+        filters.ageMax = 80;
         filters.location = "all";
         filters.state = "all";
         filters.bookmarksOnly = false;
@@ -682,8 +682,8 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = "";
         document.getElementById('gender-all').checked = true;
         ageMinInput.value = 20;
-        ageMaxInput.value = 50;
-        ageDisplay.textContent = "20 - 50";
+        ageMaxInput.value = 80;
+        ageDisplay.textContent = "20 - 80";
         locationSelect.value = "all";
         stateSelect.value = "all";
         bookmarksCheckbox.checked = false;
