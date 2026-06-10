@@ -1747,3 +1747,128 @@ select:focus {
         max-width: 100%; /* Spans full utility layout width on mobile devices */
     }
 }
+
+/* ==========================================================================
+   VIEW: ABOUT PAGE
+   ========================================================================== */
+
+.about-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.about-header {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: var(--gradient-hero);
+    color: white;
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+}
+
+.about-header h1 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.about-subtitle {
+    font-size: 1rem;
+    opacity: 0.95;
+    font-weight: 500;
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.about-section {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.about-section h2 {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+.about-section p {
+    color: var(--text-main);
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+.about-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.about-list li {
+    padding: 0.5rem 0;
+    color: var(--text-main);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-info p {
+    color: var(--text-main);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.contact-info strong {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.contact-info a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.contact-info a:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+/* About Page Tablet Responsiveness */
+@media (min-width: 768px) {
+    .about-header {
+        padding: 3rem 2rem;
+    }
+
+    .about-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .about-content {
+        gap: 2rem;
+    }
+
+    .about-section {
+        padding: 2rem;
+    }
+
+    .about-section h2 {
+        font-size: 1.5rem;
+    }
+}
