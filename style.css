@@ -1970,3 +1970,44 @@ select:focus {
     color: #fbbf24;
     font-size: 1.1rem;
 }
+
+/* Star Bullet Points Styling */
+.about-intro-list.star-bullets {
+    list-style: none; /* ડિફોલ્ટ ડોટ્સ હટાવવા માટે */
+    padding: 0;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.about-intro-list.star-bullets li {
+    position: relative;
+    padding-left: 1.8rem; /* સ્ટાર આઇકોન માટે ડાબી બાજુ જગ્યા */
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-main);
+}
+
+/* CSS દ્વારા ઓટોમેટિક ગોલ્ડન સ્ટાર ઉમેરવા માટે */
+.about-intro-list.star-bullets li::before {
+    content: "★"; /* તમે ⭐️ ઈમોજી અથવા આ સોલિડ સ્ટાર વાપરી શકો */
+    position: absolute;
+    left: 0;
+    top: 2px; /* ટેક્સ્ટની લાઈન સાથે બરાબર સેટ કરવા માટે */
+    color: #ffb800; /* પ્રીમિયમ ગોલ્ડન કલર, તમે var(--color-primary) પણ વાપરી શકો */
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* મહત્વના શબ્દો (Bold text) માટેની સ્ટાઇલ */
+.about-intro-list.star-bullets strong {
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+p.centered {
+  text-align: center;
+  color: var(--color-primary);
+}
