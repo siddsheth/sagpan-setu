@@ -435,6 +435,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
+        filtered.sort((a, b) => a.age - b.age);
+       
         resultsCountEl.textContent = `${filtered.length} મેળ ખાતી પ્રોફાઇલ્સ મળી`;
 
         if (filtered.length === 0) {
