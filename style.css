@@ -2011,3 +2011,162 @@ p.centered {
   text-align: center;
   color: var(--color-primary);
 }
+
+/* --------------------------------------------------------------------------
+   A. ડેસ્કટોપ વ્યુ (769px કે તેથી વધુ મોટી સ્ક્રીન માટે)
+   -------------------------------------------------------------------------- */
+@media (min-width: 769px) {
+    .main-nav.desktop-only {
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .main-nav .nav-link {
+        background: transparent;
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        position: relative;
+        transition: all var(--transition-fast);
+    }
+
+    /* હોવર અને એક્ટિવ ઇફેક્ટ */
+    .main-nav .nav-link:hover {
+        color: var(--color-primary);
+        background-color: rgba(255, 71, 126, 0.04);
+    }
+
+    .main-nav .nav-link.active {
+        color: var(--color-primary);
+        background-color: rgba(255, 71, 126, 0.08);
+    }
+
+    /* એક્ટિવ બટન નીચે પ્રીમિયમ રોઝ-ગોલ્ડ અંડરલાઇન */
+    .main-nav .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 20%;
+        width: 60%;
+        height: 3px;
+        background: var(--gradient-hero);
+        border-radius: 10px;
+    }
+
+    /* 'બાયો-ડેટા મોકલો' માટે હાઇલાઇટેડ CTA બટન */
+    .main-nav .nav-link.nav-cta-btn {
+        background: var(--gradient-hero);
+        color: var(--text-inverse);
+        padding: 0.65rem 1.4rem; /* ડાબી-જમણી બાજુ જગ્યા વધારીને બટનની લંબાઈ વધારી */
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 10px var(--glow-color);
+        margin-left: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        flex-shrink: 0; /* બટનની સાઇઝ નાની થતા અટકાવશે */
+    }
+
+    /* ડેસ્કટોપ પ્લસ (+) આઇકોન ફિક્સ (કપાશે નહીં) */
+    .main-nav .nav-link.nav-cta-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+        flex-shrink: 0;
+        display: block;
+    }
+
+    .main-nav .nav-link.nav-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px var(--glow-color);
+        color: var(--text-inverse);
+    }
+
+    .main-nav .nav-link.nav-cta-btn::after {
+        display: none; /* CTA બટન નીચે લાઇન હટાવવા */
+    }
+}
+
+/* --------------------------------------------------------------------------
+   B. મોબાઇલ વ્યુ (768px કે તેથી નાની સ્ક્રીન - બોટમ બાર માટે)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    /* આખા મોબાઇલ બોટમ બારને ગ્લાસ-મોર્ફિઝમ લુક આપવા */
+    .mobile-nav-bar {
+        background-color: var(--bg-surface-glass) !important;
+        backdrop-filter: var(--glass-blur) !important;
+        -webkit-backdrop-filter: var(--glass-blur) !important;
+        border-top: 1px solid var(--border-color) !important;
+        box-shadow: 0 -4px 15px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    /* સામાન્ય મોબાઇલ મેનુ બટન લિંક્સ */
+    .mobile-nav-link {
+        color: var(--text-muted) !important;
+        font-weight: 600 !important;
+        font-size: 0.72rem !important;
+        transition: all var(--transition-fast) !important;
+        position: relative !important;
+        padding: 0.4rem 0 !important;
+    }
+
+    /* એક્ટિવ મોબાઇલ મેનુ ઇફેક્ટ */
+    .mobile-nav-link.active {
+        color: var(--color-primary) !important;
+    }
+
+    /* ડેસ્કટોપની જેમ એક્ટિવ મોબાઇલ બટન ઉપર સુંદર લાઇન */
+    .mobile-nav-link.active::after {
+        content: '';
+        position: absolute;
+        top: 0; /* બોટમ મેનુ હોવાથી લાઇન ઉપરની બાજુ સારી લાગશે */
+        left: 25%;
+        width: 50%;
+        height: 3px;
+        background: var(--gradient-hero);
+        border-radius: 10px;
+    }
+
+    /* મોબાઇલમાં 'બાયો-ડેટા મોકલો' (submit) બટનને હાઇલાઇટેડ CTA બનાવવું */
+    .mobile-nav-link[data-view="submit"] {
+        background: var(--gradient-hero) !important;
+        color: var(--text-inverse) !important;
+        border-radius: var(--radius-md) !important;
+        padding: 0.5rem 0.75rem !important;
+        margin: 0.2rem 0.25rem !important;
+        box-shadow: 0 4px 10px var(--glow-color) !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* મોબાઇલ CTA બટન આઇકોન અને ફોન્ટ એડજસ્ટમેન્ટ */
+    .mobile-nav-link[data-view="submit"] svg {
+        width: 18px !important;
+        height: 18px !important;
+        color: var(--text-inverse) !important;
+        margin-bottom: 2px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .mobile-nav-link[data-view="submit"] span {
+        color: var(--text-inverse) !important;
+        font-size: 0.68rem !important;
+    }
+
+    /* મોબાઇલ CTA એક્ટિવ હોય ત્યારે તેની ઉપરની લાઇન હટાવવા */
+    .mobile-nav-link[data-view="submit"].active::after {
+        display: none !important;
+    }
+}
