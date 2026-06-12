@@ -856,6 +856,7 @@ select:focus {
 .form-field input[type="text"],
 .form-field input[type="email"],
 .form-field input[type="number"],
+.form-field input[type="tel"],
 .form-field input[type="password"] {
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
@@ -2167,6 +2168,43 @@ p.centered {
 
     /* મોબાઇલ CTA એક્ટિવ હોય ત્યારે તેની ઉપરની લાઇન હટાવવા */
     .mobile-nav-link[data-view="submit"].active::after {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   DESKTOP RESPONSIVE LAYOUT (Screens larger than mobile/tablet)
+   ========================================================================== */
+@media screen and (min-width: 768px) {
+    /* Changes the profile directory layout from 1 column into a 2 or 3-column grid */
+    .profiles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Arranges the filter sidebar and grid section side-by-side on desktop */
+    .directory-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Ensures the sidebar returns to a static layout instead of an overlaid mobile sheet */
+    .filter-sidebar {
+        position: sticky;
+        top: 90px;
+        height: auto;
+        max-height: calc(100vh - 120px);
+        transform: none !important;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+    }
+
+    /* Hides the backdrop overlay on desktop screens */
+    .sidebar-overlay {
         display: none !important;
     }
 }
