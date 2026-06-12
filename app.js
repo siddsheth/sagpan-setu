@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let tempEditPhotoBase64 = "";
 
     // Admin Access Passcode
-    const ADMIN_PASSCODE = "admin123";
+    // const ADMIN_PASSCODE = "admin123";
 
     // ==========================================
     // 2. DOM ELEMENTS
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Admin Login
     const adminLoginView = document.getElementById('admin-login-view');
     const adminLoginForm = document.getElementById('admin-login-form');
-    // const adminEmailInput = document.getElementById('admin-email');
+    const adminEmailInput = document.getElementById('admin-email');
     const adminPasscodeInput = document.getElementById('admin-passcode');
     const loginErrorMsg = document.getElementById('login-error-msg');
     
@@ -454,63 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filtered.forEach(profile => {
-        //     const isBookmarked = bookmarkedIds.has(profile.id);
-        //     const cardEl = document.createElement('div');
-        //     cardEl.className = 'profile-card';
-            
-        //     let avatarHtml = '';
-        //     if (profile.photoUrl) {
-        //         avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="avatar-image">`;
-        //     } else {
-        //         avatarHtml = getInitials(profile.name);
-        //     }
-
-        //     cardEl.innerHTML = `
-        //         <div class="profile-card-header">
-        //             <div class="avatar-circle" style="${profile.photoUrl ? '' : 'background: ' + getGradientByName(profile.name)}">
-        //                 ${avatarHtml}
-        //             </div>
-        //             <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" data-id="${profile.id}" title="${isBookmarked ? 'મનપસંદમાંથી દૂર કરો' : 'મનપસંદ કરો'}">
-        //                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-        //                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        //                 </svg>
-        //             </button>
-        //         </div>
-        //         <div class="profile-card-body">
-        //             <span class="profile-gender-badge">${profile.gender}</span>
-        //             <h3 class="profile-card-name">${profile.name}</h3>
-        //             <span class="profile-card-meta">${profile.age} વર્ષ</span>
-                    
-        //             <div class="profile-details-grid">
-        //                 <span class="detail-row-lbl">શહેર:</span>
-        //                 <span class="detail-row-val">${profile.city}</span>
-                        
-        //                 <span class="detail-row-lbl">રાજ્ય:</span>
-        //                 <span class="detail-row-val">${profile.state}</span>
-        //             </div>
-        //         </div>
-        //         <div class="profile-card-footer">
-        //             <button class="primary-btn w-100 view-pdf-trigger-btn" data-id="${profile.id}">
-        //                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-        //                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        //                     <polyline points="14 2 14 8 20 8"></polyline>
-        //                 </svg>
-        //                 બાયો-ડેટા જુઓ
-        //             </button>
-        //         </div>
-        //     `;
-            
-        //     cardEl.querySelector('.bookmark-btn').addEventListener('click', (e) => {
-        //         e.stopPropagation();
-        //         toggleBookmark(profile.id, e.currentTarget);
-        //     });
-
-        //     cardEl.querySelector('.view-pdf-trigger-btn').addEventListener('click', () => {
-        //         openProfileModal(profile);
-        //     });
-
-        //     profilesGrid.appendChild(cardEl);
-
+        
             const isBookmarked = bookmarkedIds.has(profile.id);
             const cardEl = document.createElement('div');
             // Changed class name to horizontal variant
@@ -1315,63 +1259,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     adminLoginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const inputPass = adminPasscodeInput.value.trim();
-
-        if (inputPass === ADMIN_PASSCODE) {
-            sessionStorage.setItem('soulsync_admin_auth', 'true');
-            loginErrorMsg.style.display = 'none';
-            showAdminDashboard();
-        } else {
-            loginErrorMsg.style.display = 'block';
-            adminPasscodeInput.value = '';
-        }
         // e.preventDefault();
-        
-        // const email = adminEmailInput.value.trim();
-        // const password = adminPasscodeInput.value;
-        
-        // // Ensure error messages are cleared initially
-        // loginErrorMsg.style.display = 'none';
-        // loginErrorMsg.textContent = '';
+        // const inputPass = adminPasscodeInput.value.trim();
 
-        // // Check if Supabase is active
-        // if (!isSupabaseEnabled || !supabaseClient) {
-        //     loginErrorMsg.textContent = "ડેટાબેઝ જોડાણ ઉપલબ્ધ નથી (Supabase Offline).";
+        // if (inputPass === ADMIN_PASSCODE) {
+        //     sessionStorage.setItem('soulsync_admin_auth', 'true');
+        //     loginErrorMsg.style.display = 'none';
+        //     showAdminDashboard();
+        // } else {
         //     loginErrorMsg.style.display = 'block';
-        //     return;
+        //     adminPasscodeInput.value = '';
         // }
+        e.preventDefault();
+        
+        const email = adminEmailInput.value.trim();
+        const password = adminPasscodeInput.value;
+        
+        // Ensure error messages are cleared initially
+        loginErrorMsg.style.display = 'none';
+        loginErrorMsg.textContent = '';
 
-        // try {
-        //     // Use Supabase authentication system
-        //     const { data, error } = await supabaseClient.auth.signInWithPassword({
-        //         email: email,
-        //         password: password,
-        //     });
+        // Check if Supabase is active
+        if (!isSupabaseEnabled || !supabaseClient) {
+            loginErrorMsg.textContent = "ડેટાબેઝ જોડાણ ઉપલબ્ધ નથી (Supabase Offline).";
+            loginErrorMsg.style.display = 'block';
+            return;
+        }
 
-        //     if (error) {
-        //         throw error;
-        //     }
+        try {
+            // Use Supabase authentication system
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
 
-        //     // Successful Login
-        //     if (data.user) {
-        //         // Save token tracking to SessionStorage
-        //         sessionStorage.setItem('soulsync_admin_auth', 'true');
-        //         sessionStorage.setItem('soulsync_admin_user', JSON.stringify(data.user));
+            if (error) {
+                throw error;
+            }
+
+            // Successful Login
+            if (data.user) {
+                // Save token tracking to SessionStorage
+                sessionStorage.setItem('soulsync_admin_auth', 'true');
+                sessionStorage.setItem('soulsync_admin_user', JSON.stringify(data.user));
                 
-        //         // Clear inputs
-        //         adminEmailInput.value = '';
-        //         adminPasscodeInput.value = '';
+                // Clear inputs
+                adminEmailInput.value = '';
+                adminPasscodeInput.value = '';
                 
-        //         // Transition UI view into Admin Dashboard
-        //         showAdminDashboard();
-        //     }
-        // } catch (err) {
-        //     console.error("Authentication error:", err);
-        //     // Translate or display meaningful error to the admin user
-        //     loginErrorMsg.textContent = "ખોટો ઈમેઈલ અથવા પાસવર્ડ! કૃપા કરીને ફરીથી પ્રયાસ કરો.";
-        //     loginErrorMsg.style.display = 'block';
-        // }
+                // Transition UI view into Admin Dashboard
+                showAdminDashboard();
+            }
+        } catch (err) {
+            console.error("Authentication error:", err);
+            // Translate or display meaningful error to the admin user
+            loginErrorMsg.textContent = "ખોટો ઈમેઈલ અથવા પાસવર્ડ! કૃપા કરીને ફરીથી પ્રયાસ કરો.";
+            loginErrorMsg.style.display = 'block';
+        }
     });
 
     adminLogoutBtn.addEventListener('click', () => {
