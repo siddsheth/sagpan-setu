@@ -45,6 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeEditingSubmission = null; // The pending item currently being edited by admin
     let activeEditingLiveProfile = null; // The live item currently being edited by admin
     let tempEditPhotoBase64 = "";
+       
+    // Admin Cropper Variables
+    let profileCropper = null;
+    let croppedImageBlob = null;
 
     // Admin Access Passcode
     // const ADMIN_PASSCODE = "admin123";
@@ -158,6 +162,137 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminEditorPdfFallbackBtn = document.getElementById('admin-editor-pdf-fallback-btn');
     const adminRejectSubmissionBtn = document.getElementById('admin-reject-submission-btn');
 
+   // New Cropper elements
+    const adminCropperContainer = document.getElementById('admin-cropper-container');
+    const adminCropImage = document.getElementById('admin-crop-image');
+    const cropSaveBtn = document.getElementById('crop-save-btn');
+    const cropRotateLeft = document.getElementById('crop-rotate-left');
+    const cropRotateRight = document.getElementById('crop-rotate-right');
+    const editPhotoCropBtn = document.getElementById('edit-photo-crop-btn');
+
+    // Trigger Admin File Browser
+    if (editPhotoBrowseBtn && editPhotoFileInput) {
+        editPhotoBrowseBtn.addEventListener('click', () => editPhotoFileInput.click());
+    }
+
+    // Allow cropping the currently-set preview photo (for existing profiles)
+    if (editPhotoCropBtn) {
+        editPhotoCropBtn.addEventListener('click', () => {
+            // Prefer the temp base64 (set when opening editor or after upload)
+            let src = tempEditPhotoBase64 || '';
+
+            // Fallback: try to read background-image from preview element
+            if (!src && editPhotoPreview) {
+                const bg = getComputedStyle(editPhotoPreview).backgroundImage || '';
+                const match = bg.match(/url\((?:\"|\')?(.*?)(?:\"|\')?\)/);
+                if (match && match[1] && match[1] !== 'none') {
+                    src = match[1];
+                }
+            }
+
+            if (!src) {
+                alert('પ્રોફાઇલ ફોટો ઉપલબ્ધ નથી. કૃપા કરીને પહેલા ફોટો અપલોડ કરો અથવા પસંદ કરો.');
+                return;
+            }
+
+            if (profileCropper) {
+                profileCropper.destroy();
+                profileCropper = null;
+            }
+
+            if (adminCropImage && adminCropperContainer) {
+                adminCropImage.src = src;
+                adminCropperContainer.style.display = 'block';
+                profileCropper = new Cropper(adminCropImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    background: false,
+                    responsive: true
+                });
+            }
+        });
+    }
+
+    // Initialize Cropper when image changes
+    if (editPhotoFileInput) {
+        editPhotoFileInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    if (profileCropper) {
+                        profileCropper.destroy();
+                    }
+                    
+                    if (adminCropImage && adminCropperContainer) {
+                        adminCropImage.src = event.target.result;
+                        adminCropperContainer.style.display = 'block';
+                        
+                        profileCropper = new Cropper(adminCropImage, {
+                            aspectRatio: 1, // Fixed 1:1 Square
+                            viewMode: 1,
+                            autoCropArea: 0.8,
+                            background: false,
+                            responsive: true
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Rotate and Save Functionality
+    if (cropRotateLeft) {
+        cropRotateLeft.addEventListener('click', () => profileCropper && profileCropper.rotate(-90));
+    }
+    if (cropRotateRight) {
+        cropRotateRight.addEventListener('click', () => profileCropper && profileCropper.rotate(90));
+    }
+
+    if (cropSaveBtn) {
+        cropSaveBtn.addEventListener('click', () => {
+            if (!profileCropper) return;
+
+            const canvas = profileCropper.getCroppedCanvas({
+                width: 300,
+                height: 300,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            if (editPhotoPreview) {
+                editPhotoPreview.style.backgroundImage = `url(${canvas.toDataURL('image/jpeg')})`;
+                editPhotoPreview.innerHTML = ''; 
+            }
+
+            canvas.toBlob((blob) => {
+                croppedImageBlob = blob;
+                // Read into base64 to match your existing system's tempEditPhotoBase64 pipeline if needed
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    tempEditPhotoBase64 = reader.result;
+                };
+                reader.readAsDataURL(blob);
+
+                if (adminCropperContainer) adminCropperContainer.style.display = 'none';
+            }, 'image/jpeg', 0.85); 
+        });
+    }
+
+    function resetAdminCropper() {
+        if (profileCropper) {
+            profileCropper.destroy();
+            profileCropper = null;
+        }
+        const container = document.getElementById('admin-cropper-container');
+        if (container) container.style.display = 'none';
+        croppedImageBlob = null;
+    }
+   
     // ==========================================
     // 3. COLOR GRADIENTS FOR PROFILE AVATARS
     // ==========================================
