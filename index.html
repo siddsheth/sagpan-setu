@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Main CSS -->
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 </head>
 <body>
     <!-- App Container -->
@@ -630,6 +631,18 @@
                                     <div class="photo-upload-actions">
                                         <input type="file" id="edit-photo-file" accept="image/*" style="display: none;">
                                         <button type="button" id="edit-photo-browse-btn" class="secondary-btn">ફોટો બદલો</button>
+                                        <button type="button" id="edit-photo-crop-btn" class="secondary-btn" style="margin-left:0.5rem;">ફોટો ક્રોપ કરો</button>
+                                    </div>
+                                </div>
+                                
+                                <div id="admin-cropper-container" style="display: none; margin-top: 1rem; border: 1px solid var(--color-border); padding: 0.5rem; border-radius: 8px; background: #f9f9f9;">
+                                    <div style="max-height: 250px; overflow: hidden; background: #333; display: flex; justify-content: center; align-items: center;">
+                                        <img id="admin-crop-image" src="" alt="To Crop" style="max-width: 100%; display: block;">
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: space-between;">
+                                        <button type="button" id="crop-rotate-left" class="secondary-btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">↺ ડાબે ફેરવો</button>
+                                        <button type="button" id="crop-rotate-right" class="secondary-btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">↻ જમણે ફેરવો</button>
+                                        <button type="button" id="crop-save-btn" class="primary-btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: #10b981;">ફોટો સેટ કરો</button>
                                     </div>
                                 </div>
                             </div>
@@ -735,6 +748,7 @@
 
     <!-- Application Script -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="config.js"></script>
     <!-- Application Script -->
     <script src="app.js"></script>
