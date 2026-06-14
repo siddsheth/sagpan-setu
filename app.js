@@ -598,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).sort((a, b) => getProfileAddedAt(b) - getProfileAddedAt(a));
 
         if (activeDirectoryView === 'recent') {
-            resultsCountEl.textContent = `${recentProfiles.length} તાજેતરના પ્રોફાઇલ્સ મળી`;
+            resultsCountEl.textContent = `${recentProfiles.length} તાજેતરના બાયોડેટા મળ્યા`;
             recentSectionEl.style.display = 'block';
             profilesGrid.style.display = 'none';
             recentProfilesGrid.innerHTML = '';
@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="8" y1="12" x2="16" y2="12"></line>
                         </svg>
-                        <h3>તાજેતરના પ્રોફાઇલ્સ મળી શકાયા નથી</h3>
+                        <h3>તાજેતરના બાયોડેટા મળ્યા નથી</h3>
                         <p>મહેરબાની કરીને અન્ય ફિલ્ટર વિકલ્પો અજમાવો અથવા પછીથી ફરી તપાસો.</p>
                     </div>
                 `;
@@ -624,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        resultsCountEl.textContent = `${filtered.length} મેળ ખાતી પ્રોફાઇલ્સ મળી`;
+        resultsCountEl.textContent = `${filtered.length} મેળ ખાતા બાયોડેટા મળ્યા`;
         recentSectionEl.style.display = 'none';
         recentProfilesGrid.innerHTML = '';
         profilesGrid.style.display = 'grid';
