@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoInput = document.getElementById('submit-photo');
     const photoBrowseBtn = document.getElementById('photo-browse-btn');
     const photoPreviewCircle = document.getElementById('photo-preview-circle');
+    const submitMobileInput = document.getElementById('submit-mobile');
 
     // Bio-Data file upload inputs (User Form)
     const pdfDropZone = document.getElementById('pdf-drop-zone');
@@ -135,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalAge = document.getElementById('modal-age');
     const modalCity = document.getElementById('modal-city');
     const modalState = document.getElementById('modal-state');
+    const modalMobile = document.getElementById('modal-mobile');
     const modalBookmarkBtn = document.getElementById('modal-bookmark-btn');
     const modalDownloadBtn = document.getElementById('modal-download-btn');
     const modalOpenNewBtn = document.getElementById('modal-open-new-btn');
@@ -150,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editNameInput = document.getElementById('edit-name');
     const editGenderSelect = document.getElementById('edit-gender');
     const editAgeInput = document.getElementById('edit-age');
+    const editMobileInput = document.getElementById('edit-mobile');
     const editCityInput = document.getElementById('edit-city');
     const editStateInput = document.getElementById('edit-state');
     
@@ -359,6 +362,15 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('soulsync_pending_submissions', JSON.stringify(pendingSubmissions));
     }
 
+    function normalizeMobileNumber(value) {
+        if (!value) return null;
+        const digits = value.replace(/\D/g, '');
+        if (digits.length === 10) {
+            return digits;
+        }
+        return null;
+    }
+
     function checkSupabase() {
         if (typeof supabase !== 'undefined' && typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL && SUPABASE_CONFIG.ANON_KEY) {
             try {
@@ -411,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 age: p.age,
                 city: p.city,
                 state: p.state,
+                mobile: p.mobile || p.mobile_number || '',
                 photoUrl: p.photo_url,
                 pdfUrl: p.pdf_url,
                 isImageBioData: p.is_image_biodata
@@ -423,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 age: p.age,
                 city: p.city,
                 state: p.state,
+                mobile: p.mobile || p.mobile_number || '',
                 photoUrl: p.photo_url,
                 pdfUrl: p.pdf_url,
                 isImageBioData: p.is_image_biodata
@@ -623,6 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         <div class="horizontal-meta-row">
                             <span class="meta-pill age-pill">${profile.age} વર્ષ</span>
+                            <span class="meta-pill mobile-pill">📱 ${profile.mobile || 'N/A'}</span>
                             <span class="meta-pill location-pill">📍 ${profile.city}, ${profile.state}</span>
                         </div>
                     </div>
@@ -925,6 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalName.textContent = profile.name;
         modalGender.textContent = profile.gender;
         modalAge.textContent = `${profile.age} વર્ષ`;
+        modalMobile.textContent = profile.mobile || 'N/A';
         modalCity.textContent = profile.city;
         modalState.textContent = profile.state;
 
@@ -1233,14 +1249,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('submit-name').value.trim();
         const rawGender = document.getElementById('submit-gender').value;
         const age = parseInt(document.getElementById('submit-age').value);
+        const mobile = document.getElementById('submit-mobile').value.trim();
         const city = document.getElementById('submit-location').value.trim();
         const state = document.getElementById('submit-state').value.trim();
 
         const gender = rawGender === 'Male' ? 'પુરુષ' : 'સ્ત્રી';
+        const normalizedMobile = normalizeMobileNumber(mobile);
 
         submitProfileBtn.disabled = true;
         const btnText = submitProfileBtn.querySelector('.btn-text');
         const spinner = submitProfileBtn.querySelector('.btn-spinner');
+       
+        if (!normalizedMobile) {
+            showSubmitAlert('કૃપા કરીને 10 અંકોનો મોબાઈલ નંબર દાખલ કરો.', 'danger');
+            submitProfileBtn.disabled = false;
+            btnText.style.display = 'block';
+            spinner.style.display = 'none';
+            return;
+        }
+
+        submitProfileBtn.disabled = true;
+
         btnText.style.display = 'none';
         spinner.style.display = 'block';
 
@@ -1293,6 +1322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: name,
                         gender: gender,
                         age: age,
+                        mobile: normalizedMobile,
                         city: city,
                         state: state,
                         photo_url: finalPhotoUrl,
@@ -1333,6 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name,
                     gender,
                     age,
+                    mobile: normalizedMobile,
                     city,
                     state,
                     photoUrl: tempPhotoBase64,
@@ -1504,6 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div>
                             <div class="candidate-mini-name">${sub.name}</div>
                             <div class="text-muted-mini">તારીખ: ${sub.submissionDate || 'N/A'}</div>
+                            <div class="text-muted-mini">મોબાઈલ: ${sub.mobile || 'N/A'}</div>
                         </div>
                     </div>
                 </td>
@@ -1620,6 +1652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div>
                             <div class="candidate-mini-name">${profile.name}</div>
+                            <div class="text-muted-mini">મોબાઈલ: ${profile.mobile || 'N/A'}</div>
                         </div>
                     </div>
                 </td>
@@ -1665,6 +1698,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editNameInput.value = item.name;
         editGenderSelect.value = item.gender === 'પુરુષ' ? 'Male' : 'Female';
         editAgeInput.value = item.age;
+        editMobileInput.value = item.mobile || '';
         editCityInput.value = item.city;
         editStateInput.value = item.state;
 
@@ -1727,10 +1761,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const approvedName = editNameInput.value.trim();
         const rawGender = editGenderSelect.value;
         const approvedAge = parseInt(editAgeInput.value);
+        const approvedMobile = editMobileInput.value.trim();
         const approvedCity = editCityInput.value.trim();
         const approvedState = editStateInput.value.trim();
 
         const approvedGender = rawGender === 'Male' ? 'પુરુષ' : 'સ્ત્રી';
+        const normalizedApprovedMobile = normalizeMobileNumber(approvedMobile);
+
+        if (!normalizedApprovedMobile) {
+            alert('કૃપા કરીને યોગ્ય ભારતીય મોબાઇલ નંબર દાખલ કરો.');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalBtnText;
+            return;
+        }
+
 
         const confirmBtn = document.getElementById('admin-confirm-approve-btn');
         const originalBtnText = confirmBtn.innerHTML;
@@ -1769,6 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: approvedName,
                             gender: approvedGender,
                             age: approvedAge,
+                            mobile: normalizedApprovedMobile,
                             city: approvedCity,
                             state: approvedState,
                             photo_url: finalPhotoUrl || activeEditingSubmission.photoUrl,
@@ -1785,6 +1830,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: approvedName,
                             gender: approvedGender,
                             age: approvedAge,
+                            mobile: normalizedApprovedMobile,
                             city: approvedCity,
                             state: approvedState,
                             photo_url: finalPhotoUrl || activeEditingLiveProfile.photoUrl
@@ -1820,6 +1866,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     photoUrl: tempEditPhotoBase64 || activeEditingSubmission.photoUrl,
                     gender: approvedGender,
                     age: approvedAge,
+                    mobile: normalizedApprovedMobile,
                     city: approvedCity,
                     state: approvedState,
                     pdfUrl: activeEditingSubmission.pdfUrl,
@@ -1841,6 +1888,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     approvedProfiles[index].name = approvedName;
                     approvedProfiles[index].gender = approvedGender;
                     approvedProfiles[index].age = approvedAge;
+                    approvedProfiles[index].mobile = normalizedApprovedMobile;
                     approvedProfiles[index].city = approvedCity;
                     approvedProfiles[index].state = approvedState;
                     if (tempEditPhotoBase64) {
