@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeEditingSubmission = null; // The pending item currently being edited by admin
     let activeEditingLiveProfile = null; // The live item currently being edited by admin
     let tempEditPhotoBase64 = "";
-       
+
     // Admin Cropper Variables
     let profileCropper = null;
     let croppedImageBlob = null;
@@ -90,6 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const activePillsContainer = document.getElementById('active-pills-container');
     const resultsCountEl = document.getElementById('results-count');
     const profilesGrid = document.getElementById('profiles-grid');
+    const recentSectionEl = document.getElementById('recently-added-section');
+    const recentProfilesGrid = document.getElementById('recent-profiles-grid');
+    const viewToggleButtons = document.querySelectorAll('.view-toggle-btn');
+    let activeDirectoryView = 'all';
     
     // Submission Form elements
     const submissionForm = document.getElementById('submission-form');
@@ -165,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminEditorPdfFallbackBtn = document.getElementById('admin-editor-pdf-fallback-btn');
     const adminRejectSubmissionBtn = document.getElementById('admin-reject-submission-btn');
 
-   // New Cropper elements
+    // New Cropper elements
     const adminCropperContainer = document.getElementById('admin-cropper-container');
     const adminCropImage = document.getElementById('admin-crop-image');
     const cropSaveBtn = document.getElementById('crop-save-btn');
@@ -295,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (container) container.style.display = 'none';
         croppedImageBlob = null;
     }
-   
+
     // ==========================================
     // 3. COLOR GRADIENTS FOR PROFILE AVATARS
     // ==========================================
@@ -426,7 +430,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobile: p.mobile || p.mobile_number || '',
                 photoUrl: p.photo_url,
                 pdfUrl: p.pdf_url,
-                isImageBioData: p.is_image_biodata
+                isImageBioData: p.is_image_biodata,
+                addedAt: p.created_at ? new Date(p.created_at).toISOString() : null
             }));
 
             pendingSubmissions = data.filter(p => p.status === 'pending').map(p => ({
@@ -586,85 +591,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
         filtered.sort((a, b) => a.age - b.age);
        
-        resultsCountEl.textContent = `${filtered.length} મેળ ખાતી પ્રોફાઇલ્સ મળી`;
+        const recentThreshold = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+        const recentProfiles = filtered.filter(profile => {
+            const addedAt = getProfileAddedAt(profile);
+            return addedAt && addedAt >= recentThreshold;
+        }).sort((a, b) => getProfileAddedAt(b) - getProfileAddedAt(a));
 
-        if (filtered.length === 0) {
-            profilesGrid.innerHTML = `
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="8" y1="12" x2="16" y2="12"></line>
-                    </svg>
-                    <h3>કોઈ મેળ ખાતી પ્રોફાઇલ મળી નથી</h3>
-                    <p>કૃપા કરીને સર્ચ ટેક્સ્ટ બદલીને અથવા ફિલ્ટર્સ હળવા કરીને ફરીથી પ્રયાસ કરો.</p>
-                </div>
-            `;
+        if (activeDirectoryView === 'recent') {
+            resultsCountEl.textContent = `${recentProfiles.length} તાજેતરના પ્રોફાઇલ્સ મળી`;
+            recentSectionEl.style.display = 'block';
+            profilesGrid.style.display = 'none';
+            recentProfilesGrid.innerHTML = '';
+
+            if (recentProfiles.length === 0) {
+                recentProfilesGrid.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        <h3>તાજેતરના પ્રોફાઇલ્સ મળી શકાયા નથી</h3>
+                        <p>મહેરબાની કરીને અન્ય ફિલ્ટર વિકલ્પો અજમાવો અથવા પછીથી ફરી તપાસો.</p>
+                    </div>
+                `;
+            } else {
+                recentProfiles.forEach(profile => {
+                    recentProfilesGrid.appendChild(createProfileCard(profile));
+                });
+            }
+
+            renderActiveFiltersPills();
             return;
         }
 
+        resultsCountEl.textContent = `${filtered.length} મેળ ખાતી પ્રોફાઇલ્સ મળી`;
+        recentSectionEl.style.display = 'none';
+        recentProfilesGrid.innerHTML = '';
+        profilesGrid.style.display = 'grid';
+        profilesGrid.innerHTML = '';
         filtered.forEach(profile => {
-        
-            const isBookmarked = bookmarkedIds.has(profile.id);
-            const cardEl = document.createElement('div');
-            // Changed class name to horizontal variant
-            cardEl.className = 'profile-card-horizontal'; 
-            
-            let avatarHtml = '';
-            if (profile.photoUrl) {
-                avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="horizontal-avatar-image">`;
-            } else {
-                avatarHtml = getInitials(profile.name);
-            }
-
-            // New Clean Dashboard Horizontal Layout
-            cardEl.innerHTML = `
-                <div class="horizontal-card-left">
-                    <div class="horizontal-avatar-container" style="${profile.photoUrl ? '' : 'background: ' + getGradientByName(profile.name)}">
-                        ${avatarHtml}
-                    </div>
-                </div>
-                
-                <div class="horizontal-card-right">
-                    <div class="horizontal-card-main-content">
-                        <div class="horizontal-card-header">
-                            <h3 class="horizontal-profile-name">${profile.name}</h3>
-                            <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" data-id="${profile.id}" title="${isBookmarked ? 'મનપસંદમાંથી દૂર કરો' : 'મનપસંદ કરો'}">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <div class="horizontal-meta-row">
-                            <span class="meta-pill age-pill">${profile.age} વર્ષ</span>
-                            <!-- <span class="meta-pill mobile-pill">📱 ${profile.mobile || 'N/A'}</span> -->
-                            <span class="meta-pill location-pill">📍 ${profile.city}, ${profile.state}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="horizontal-card-footer">
-                        <button class="primary-btn w-100 view-pdf-trigger-btn" data-id="${profile.id}">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                            </svg>
-                            બાયો-ડેટા જુઓ
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Event listeners remain completely identical to keep functionality intact
-            cardEl.querySelector('.bookmark-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleBookmark(profile.id, e.currentTarget);
-            });
-
-            cardEl.querySelector('.view-pdf-trigger-btn').addEventListener('click', () => {
-                openProfileModal(profile);
-            });
-
-            profilesGrid.appendChild(cardEl);
+            profilesGrid.appendChild(createProfileCard(profile));
         });
 
         renderActiveFiltersPills();
@@ -685,6 +651,74 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filters.bookmarksOnly) {
             renderProfilesGrid();
         }
+    }
+
+    function getProfileAddedAt(profile) {
+        if (!profile) return null;
+        const rawDate = profile.addedAt || profile.created_at || profile.submissionDate || profile.createdAt || profile.dateAdded;
+        if (!rawDate) return null;
+        const parsed = new Date(rawDate);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function createProfileCard(profile) {
+        const isBookmarked = bookmarkedIds.has(profile.id);
+        const cardEl = document.createElement('div');
+        cardEl.className = 'profile-card-horizontal';
+
+        let avatarHtml = '';
+        if (profile.photoUrl) {
+            avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="horizontal-avatar-image">`;
+        } else {
+            avatarHtml = getInitials(profile.name);
+        }
+
+        cardEl.innerHTML = `
+            <div class="horizontal-card-left">
+                <div class="horizontal-avatar-container" style="${profile.photoUrl ? '' : 'background: ' + getGradientByName(profile.name)}">
+                    ${avatarHtml}
+                </div>
+            </div>
+            
+            <div class="horizontal-card-right">
+                <div class="horizontal-card-main-content">
+                    <div class="horizontal-card-header">
+                        <h3 class="horizontal-profile-name">${profile.name}</h3>
+                        <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" data-id="${profile.id}" title="${isBookmarked ? 'મનપસંદમાંથી દૂર કરો' : 'મનપસંદ કરો'}">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="horizontal-meta-row">
+                        <span class="meta-pill age-pill">${profile.age} વર્ષ</span>
+                        <span class="meta-pill location-pill">📍 ${profile.city}, ${profile.state}</span>
+                    </div>
+                </div>
+                
+                <div class="horizontal-card-footer">
+                    <button class="primary-btn w-100 view-pdf-trigger-btn" data-id="${profile.id}">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        બાયો-ડેટા જુઓ
+                    </button>
+                </div>
+            </div>
+        `;
+
+        cardEl.querySelector('.bookmark-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleBookmark(profile.id, e.currentTarget);
+        });
+
+        cardEl.querySelector('.view-pdf-trigger-btn').addEventListener('click', () => {
+            openProfileModal(profile);
+        });
+
+        return cardEl;
     }
 
     function renderActiveFiltersPills() {
@@ -837,6 +871,18 @@ document.addEventListener('DOMContentLoaded', () => {
     bookmarksCheckbox.addEventListener('change', (e) => {
         filters.bookmarksOnly = e.target.checked;
         renderProfilesGrid();
+    });
+
+    viewToggleButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetView = btn.getAttribute('data-view');
+            if (activeDirectoryView === targetView) return;
+            activeDirectoryView = targetView;
+            viewToggleButtons.forEach(toggle => {
+                toggle.classList.toggle('active', toggle.getAttribute('data-view') === targetView);
+            });
+            renderProfilesGrid();
+        });
     });
 
     let searchDebounce;
@@ -1256,10 +1302,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const gender = rawGender === 'Male' ? 'પુરુષ' : 'સ્ત્રી';
         const normalizedMobile = normalizeMobileNumber(mobile);
 
-        submitProfileBtn.disabled = true;
         const btnText = submitProfileBtn.querySelector('.btn-text');
         const spinner = submitProfileBtn.querySelector('.btn-spinner');
-       
+
         if (!normalizedMobile) {
             showSubmitAlert('કૃપા કરીને 10 અંકોનો મોબાઈલ નંબર દાખલ કરો.', 'danger');
             submitProfileBtn.disabled = false;
@@ -1269,7 +1314,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         submitProfileBtn.disabled = true;
-
         btnText.style.display = 'none';
         spinner.style.display = 'block';
 
@@ -1369,7 +1413,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     photoUrl: tempPhotoBase64,
                     pdfUrl: tempPdfBase64,
                     isImageBioData: tempIsImageBioData,
-                    submissionDate: new Date().toLocaleDateString()
+                    submissionDate: new Date().toLocaleDateString(),
+                    addedAt: new Date().toISOString()
                 };
 
                 pendingSubmissions.push(newSubmission);
@@ -1775,7 +1820,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-
         const confirmBtn = document.getElementById('admin-confirm-approve-btn');
         const originalBtnText = confirmBtn.innerHTML;
         confirmBtn.disabled = true;
@@ -1870,7 +1914,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     city: approvedCity,
                     state: approvedState,
                     pdfUrl: activeEditingSubmission.pdfUrl,
-                    isImageBioData: activeEditingSubmission.isImageBioData
+                    isImageBioData: activeEditingSubmission.isImageBioData,
+                    addedAt: activeEditingSubmission.addedAt || activeEditingSubmission.submissionDate || new Date().toISOString()
                 };
 
                 const index = pendingSubmissions.findIndex(sub => sub.id === activeEditingSubmission.id);
