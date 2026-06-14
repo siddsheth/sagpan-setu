@@ -1711,6 +1711,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tempEditPhotoFile = null;
         editPhotoFileInput.value = "";
         document.body.style.overflow = '';
+        resetAdminCropper();
     }
 
     adminEditorCloseBtn.addEventListener('click', closeAdminEditor);
