@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let tempPdfFile = null;
     let tempPhotoFile = null;
     let tempEditPhotoFile = null;
+    let tempEditPdfFile = null;
+    let tempEditIsImageBioData = false;
 
     // Search & Filter state
     const filters = {
@@ -163,6 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const editPhotoFileInput = document.getElementById('edit-photo-file');
     const editPhotoBrowseBtn = document.getElementById('edit-photo-browse-btn');
     const editPhotoPreview = document.getElementById('edit-photo-preview');
+
+    const editPdfFileInput = document.getElementById('edit-pdf-file');
+    const editPdfBrowseBtn = document.getElementById('edit-pdf-browse-btn');
+    const editPdfFileName = document.getElementById('edit-pdf-file-name');
     
     const adminEditorPdfWrapper = document.getElementById('admin-editor-pdf-wrapper');
     const adminEditorPdfFallback = document.getElementById('admin-editor-pdf-fallback');
@@ -180,6 +186,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Trigger Admin File Browser
     if (editPhotoBrowseBtn && editPhotoFileInput) {
         editPhotoBrowseBtn.addEventListener('click', () => editPhotoFileInput.click());
+    }
+
+    if (editPdfBrowseBtn && editPdfFileInput) {
+        editPdfBrowseBtn.addEventListener('click', () => editPdfFileInput.click());
     }
 
     // Allow cropping the currently-set preview photo (for existing profiles)
@@ -1791,6 +1801,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    if (editPdfFileInput) {
+        editPdfFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                tempEditPdfFile = file;
+                if (editPdfFileName) editPdfFileName.textContent = file.name;
+                tempEditIsImageBioData = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+            }
+        });
+    }
+
     function closeAdminEditor() {
         adminEditorModal.classList.remove('active');
         adminEditorPdfWrapper.innerHTML = '';
@@ -1798,6 +1819,9 @@ document.addEventListener('DOMContentLoaded', () => {
         activeEditingLiveProfile = null;
         tempEditPhotoBase64 = "";
         tempEditPhotoFile = null;
+        tempEditPdfFile = null;
+        if (editPdfFileInput) editPdfFileInput.value = "";
+        if (editPdfFileName) editPdfFileName.textContent = "ફાઇલ પસંદ કરેલ નથી";
         editPhotoFileInput.value = "";
         document.body.style.overflow = '';
         resetAdminCropper();
@@ -1839,6 +1863,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSupabaseEnabled) {
             try {
                 let finalPhotoUrl = tempEditPhotoBase64;
+                let finalPdfUrl = activeEditingSubmission ? activeEditingSubmission.pdfUrl : (activeEditingLiveProfile ? activeEditingLiveProfile.pdfUrl : null);
+                let finalIsImageBioData = activeEditingSubmission ? activeEditingSubmission.isImageBioData : (activeEditingLiveProfile ? activeEditingLiveProfile.isImageBioData : false);
+
+                // Upload new pdf/image biodata if it was selected
+                if (tempEditPdfFile) {
+                    const timestamp = Date.now();
+                    const pdfExt = tempEditPdfFile.name.split('.').pop() || 'pdf';
+                    const pdfPath = `biodatas/biodata_${timestamp}.${pdfExt}`;
+
+                    const { error: pdfUploadError } = await supabaseClient
+                        .storage
+                        .from('sagpan-setu')
+                        .upload(pdfPath, tempEditPdfFile);
+
+                    if (pdfUploadError) throw pdfUploadError;
+
+                    const { data: pdfData } = supabaseClient
+                        .storage
+                        .from('sagpan-setu')
+                        .getPublicUrl(pdfPath);
+
+                    finalPdfUrl = pdfData.publicUrl;
+                    finalIsImageBioData = tempEditIsImageBioData;
+
+                    // Cleanup old file
+                    try {
+                        let oldPdfUrl = activeEditingSubmission ? activeEditingSubmission.pdfUrl : (activeEditingLiveProfile ? activeEditingLiveProfile.pdfUrl : null);
+                        if (oldPdfUrl && oldPdfUrl.includes('supabase.co')) {
+                            const oldPath = oldPdfUrl.split('/storage/v1/object/public/sagpan-setu/')[1];
+                            if (oldPath) {
+                                await supabaseClient.storage.from('sagpan-setu').remove([oldPath]);
+                            }
+                        }
+                    } catch(e) {
+                        console.warn('Could not delete old bio data:', e);
+                    }
+                }
 
                 // Upload new photo if it was selected
                 if (tempEditPhotoFile) {
@@ -1873,6 +1934,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             city: approvedCity,
                             state: approvedState,
                             photo_url: finalPhotoUrl || activeEditingSubmission.photoUrl,
+                            pdf_url: finalPdfUrl,
+                            is_image_biodata: finalIsImageBioData,
                             status: 'approved'
                         })
                         .eq('id', activeEditingSubmission.id);
@@ -1890,7 +1953,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             mobile: normalizedApprovedMobile,
                             city: approvedCity,
                             state: approvedState,
-                            photo_url: finalPhotoUrl || activeEditingLiveProfile.photoUrl
+                            photo_url: finalPhotoUrl || activeEditingLiveProfile.photoUrl,
+                            pdf_url: finalPdfUrl,
+                            is_image_biodata: finalIsImageBioData
                         })
                         .eq('id', activeEditingLiveProfile.id);
 
@@ -1947,8 +2012,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     approvedProfiles[index].name = approvedName;
                     approvedProfiles[index].gender = approvedGender;
                     approvedProfiles[index].age = approvedAge;
-                    approvedProfiles[index].mobile = normalizedApprovedMobile;
                     approvedProfiles[index].education = approvedEducation;
+                    approvedProfiles[index].mobile = normalizedApprovedMobile;
                     approvedProfiles[index].city = approvedCity;
                     approvedProfiles[index].state = approvedState;
                     if (tempEditPhotoBase64) {
