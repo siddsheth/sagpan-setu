@@ -725,6 +725,16 @@
                                 <input type="text" id="edit-state" required>
                             </div>
 
+                            <!-- Bio-data File Uploader -->
+                            <div class="form-field">
+                                <label>બાયોડેટા ફાઇલ (PDF / Image) <span class="required">*</span></label>
+                                <div class="photo-upload-actions" style="margin-top: 0.5rem;">
+                                    <input type="file" id="edit-pdf-file" accept=".pdf,image/*" style="display: none;">
+                                    <button type="button" id="edit-pdf-browse-btn" class="secondary-btn w-100">બાયોડેટા ફાઇલ બદલો</button>
+                                    <span class="file-limits text-center" style="display:block; margin-top: 0.25rem;" id="edit-pdf-file-name">ફાઇલ પસંદ કરેલ નથી</span>
+                                </div>
+                            </div>
+                            
                             <div class="modal-actions-column">
                                 <button type="submit" class="primary-btn w-100" id="admin-confirm-approve-btn">
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
