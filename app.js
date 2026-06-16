@@ -425,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: p.name,
                 gender: p.gender,
                 age: p.age,
+                education: p.education,
                 city: p.city,
                 state: p.state,
                 mobile: p.mobile || p.mobile_number || '',
@@ -439,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: p.name,
                 gender: p.gender,
                 age: p.age,
+                education: p.education,
                 city: p.city,
                 state: p.state,
                 mobile: p.mobile || p.mobile_number || '',
@@ -693,6 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="horizontal-meta-row">
                         <span class="meta-pill age-pill">${profile.age} વર્ષ</span>
+                        <span class="meta-pill education-pill">🎓 ${profile.education || 'N/A'}</span>
                         <span class="meta-pill location-pill">📍 ${profile.city}, ${profile.state}</span>
                     </div>
                 </div>
@@ -986,6 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalName.textContent = profile.name;
         modalGender.textContent = profile.gender;
         modalAge.textContent = `${profile.age} વર્ષ`;
+        document.getElementById('modal-education').textContent = profile.education || 'N/A';
         modalMobile.textContent = profile.mobile || 'N/A';
         modalCity.textContent = profile.city;
         modalState.textContent = profile.state;
@@ -1298,6 +1302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mobile = document.getElementById('submit-mobile').value.trim();
         const city = document.getElementById('submit-location').value.trim();
         const state = document.getElementById('submit-state').value.trim();
+        const education = document.getElementById('submit-education').value.trim();
 
         const gender = rawGender === 'Male' ? 'પુરુષ' : 'સ્ત્રી';
         const normalizedMobile = normalizeMobileNumber(mobile);
@@ -1366,6 +1371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: name,
                         gender: gender,
                         age: age,
+                        education: education,
                         mobile: normalizedMobile,
                         city: city,
                         state: state,
@@ -1407,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name,
                     gender,
                     age,
+                    education,
                     mobile: normalizedMobile,
                     city,
                     state,
@@ -1585,6 +1592,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
                 <td data-label="લિંગ / ઉંમર">${sub.gender} • ${sub.age} વર્ષ</td>
+                <td data-label="અભ્યાસ">${sub.education || 'N/A'}</td>
                 <td data-label="સ્થળ">${sub.city}, ${sub.state}</td>
                 <td data-label="બાયો-ડેટા ફાઇલ">
                     <a href="#" class="pdf-link-btn view-pending-pdf-action" data-id="${sub.id}">
@@ -1702,6 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
                 <td data-label="લિંગ / ઉંમર">${profile.gender} • ${profile.age} વર્ષ</td>
+                <td data-label="અભ્યાસ">${profile.education || 'N/A'}</td>
                 <td data-label="સ્થળ">${profile.city}, ${profile.state}</td>
                 <td data-label="સ્રોત" style="font-weight: 600; color: ${isUserSubmission ? 'var(--color-primary)' : 'var(--text-muted)'}">${sourceLabel}</td>
                 <td data-label="એક્શન">
@@ -1743,6 +1752,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editNameInput.value = item.name;
         editGenderSelect.value = item.gender === 'પુરુષ' ? 'Male' : 'Female';
         editAgeInput.value = item.age;
+        document.getElementById('edit-education').value = item.education || '';
         editMobileInput.value = item.mobile || '';
         editCityInput.value = item.city;
         editStateInput.value = item.state;
@@ -1806,6 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const approvedName = editNameInput.value.trim();
         const rawGender = editGenderSelect.value;
         const approvedAge = parseInt(editAgeInput.value);
+        const approvedEducation = document.getElementById('edit-education').value.trim();
         const approvedMobile = editMobileInput.value.trim();
         const approvedCity = editCityInput.value.trim();
         const approvedState = editStateInput.value.trim();
@@ -1857,6 +1868,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: approvedName,
                             gender: approvedGender,
                             age: approvedAge,
+                            education: approvedEducation,
                             mobile: normalizedApprovedMobile,
                             city: approvedCity,
                             state: approvedState,
@@ -1874,6 +1886,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             name: approvedName,
                             gender: approvedGender,
                             age: approvedAge,
+                            education: approvedEducation,
                             mobile: normalizedApprovedMobile,
                             city: approvedCity,
                             state: approvedState,
@@ -1910,6 +1923,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     photoUrl: tempEditPhotoBase64 || activeEditingSubmission.photoUrl,
                     gender: approvedGender,
                     age: approvedAge,
+                    education: approvedEducation,
                     mobile: normalizedApprovedMobile,
                     city: approvedCity,
                     state: approvedState,
@@ -1934,6 +1948,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     approvedProfiles[index].gender = approvedGender;
                     approvedProfiles[index].age = approvedAge;
                     approvedProfiles[index].mobile = normalizedApprovedMobile;
+                    approvedProfiles[index].education = approvedEducation;
                     approvedProfiles[index].city = approvedCity;
                     approvedProfiles[index].state = approvedState;
                     if (tempEditPhotoBase64) {
