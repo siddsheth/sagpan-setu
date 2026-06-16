@@ -1344,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: photoUploadError } = await supabaseClient
                     .storage
                     .from('sagpan-setu')
-                    .upload(photoPath, tempPhotoFile);
+                    .upload(photoPath, tempPhotoFile, { cacheControl: '31536000' });
 
                 if (photoUploadError) throw photoUploadError;
 
@@ -1362,7 +1362,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: pdfUploadError } = await supabaseClient
                     .storage
                     .from('sagpan-setu')
-                    .upload(pdfPath, tempPdfFile);
+                    .upload(pdfPath, tempPdfFile, { cacheControl: '31536000' });
 
                 if (pdfUploadError) throw pdfUploadError;
 
@@ -1875,7 +1875,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const { error: pdfUploadError } = await supabaseClient
                         .storage
                         .from('sagpan-setu')
-                        .upload(pdfPath, tempEditPdfFile);
+                        .upload(pdfPath, tempEditPdfFile, { cacheControl: '31536000' });
 
                     if (pdfUploadError) throw pdfUploadError;
 
@@ -1910,7 +1910,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const { error: photoUploadError } = await supabaseClient
                         .storage
                         .from('sagpan-setu')
-                        .upload(photoPath, tempEditPhotoFile);
+                        .upload(photoPath, tempEditPhotoFile, { cacheControl: '31536000' });
 
                     if (photoUploadError) throw photoUploadError;
 
