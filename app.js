@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="horizontal-meta-row">
                         <span class="meta-pill age-pill">${profile.age} વર્ષ</span>
-                        <span class="meta-pill education-pill">🎓 ${profile.education || 'N/A'}</span>
+                        <span class="meta-pill education-pill">🎓 અભ્યાસ: ${profile.education || 'N/A'}</span>
                         <span class="meta-pill location-pill">📍 ${profile.city}, ${profile.state}</span>
                     </div>
                 </div>
