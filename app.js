@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).sort((a, b) => getProfileAddedAt(b) - getProfileAddedAt(a));
 
         if (activeDirectoryView === 'recent') {
-            resultsCountEl.textContent = `${recentProfiles.length} તાજેતરના બાયોડેટા મળ્યા`;
+            resultsCountEl.textContent = `${recentProfiles.length} તાજેતરનાા બાયોડેટા ઉપલબ્ધ ...`;
             recentSectionEl.style.display = 'block';
             profilesGrid.style.display = 'none';
             recentProfilesGrid.innerHTML = '';
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        resultsCountEl.textContent = `${filtered.length} મેળ ખાતા બાયોડેટા મળ્યા`;
+        resultsCountEl.textContent = `${filtered.length} યુવકોના બાયોડેટા ઉપલબ્ધ ...`;
         recentSectionEl.style.display = 'none';
         recentProfilesGrid.innerHTML = '';
         profilesGrid.style.display = 'grid';
