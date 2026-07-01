@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         filtered.sort((a, b) => a.age - b.age);
        
-        const recentThreshold = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+        const recentThreshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const recentProfiles = filtered.filter(profile => {
             const addedAt = getProfileAddedAt(profile);
             return addedAt && addedAt >= recentThreshold;
