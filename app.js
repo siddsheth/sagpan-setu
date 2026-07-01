@@ -14,9 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingSubmissions = [];   // From LocalStorage (pending approval)
     let bookmarkedIds = new Set();  // Set of bookmarked profile IDs
     
-    // Supabase variables
-    let isSupabaseEnabled = false;
-    let supabaseClient = null;
+    // Firebase variables
+    let isFirebaseEnabled = false;
+    let firebaseDb = null;
+    let firebaseStorage = null;
+    let firebaseAuth = null;
 
     // Binary file references for uploads (instead of Base64 strings)
     let tempPdfFile = null;
@@ -385,28 +387,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    function checkSupabase() {
-        if (typeof supabase !== 'undefined' && typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.URL && SUPABASE_CONFIG.ANON_KEY) {
+    function checkFirebase() {
+        if (typeof firebase !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG.apiKey) {
             try {
-                const { createClient } = supabase;
-                supabaseClient = createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
-                isSupabaseEnabled = true;
-                console.log("Supabase initialized successfully.");
+                firebase.initializeApp(FIREBASE_CONFIG);
+                firebaseDb = firebase.firestore();
+                firebaseStorage = firebase.storage();
+                firebaseAuth = firebase.auth();
+                isFirebaseEnabled = true;
+                console.log("Firebase initialized successfully.");
             } catch (err) {
-                console.error("Failed to initialize Supabase client:", err);
-                isSupabaseEnabled = false;
+                console.error("Failed to initialize Firebase client:", err);
+                isFirebaseEnabled = false;
             }
         } else {
-            console.log("Supabase config not found or incomplete. Falling back to LocalStorage (Offline Mode).");
-            isSupabaseEnabled = false;
+            console.log("Firebase config not found or incomplete. Falling back to LocalStorage (Offline Mode).");
+            isFirebaseEnabled = false;
         }
 
         // Update badge UI
         const statusBadge = document.getElementById('admin-db-status');
         const seedBtn = document.getElementById('admin-seed-btn');
         if (statusBadge) {
-            if (isSupabaseEnabled) {
-                statusBadge.textContent = "લાઇવ (Supabase)";
+            if (isFirebaseEnabled) {
+                statusBadge.textContent = "લાઇવ (Firebase)";
                 statusBadge.className = "db-status-badge online";
                 if (seedBtn) seedBtn.style.display = "inline-flex";
             } else {
@@ -417,17 +421,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function fetchProfilesFromSupabase() {
+    async function fetchProfilesFromFirebase() {
         try {
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (error) {
-                console.error("Error fetching profiles from Supabase:", error);
-                return false;
-            }
+            const snapshot = await firebaseDb.collection('profiles').orderBy('created_at', 'asc').get();
+            const data = [];
+            snapshot.forEach(doc => {
+                data.push({ id: doc.id, ...doc.data() });
+            });
 
             // Map fields back to app.js conventions
             approvedProfiles = data.filter(p => p.status === 'approved').map(p => ({
@@ -439,10 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 city: p.city,
                 state: p.state,
                 mobile: p.mobile || p.mobile_number || '',
-                photoUrl: p.photo_url,
-                pdfUrl: p.pdf_url,
-                isImageBioData: p.is_image_biodata,
-                addedAt: p.created_at ? new Date(p.created_at).toISOString() : null
+                photoUrl: p.photo_url || p.photoUrl,
+                pdfUrl: p.pdf_url || p.pdfUrl,
+                isImageBioData: p.is_image_biodata || p.isImageBioData || false,
+                addedAt: p.created_at ? (typeof p.created_at === 'string' ? p.created_at : (p.created_at.toDate ? p.created_at.toDate().toISOString() : new Date(p.created_at).toISOString())) : null
             }));
 
             pendingSubmissions = data.filter(p => p.status === 'pending').map(p => ({
@@ -454,21 +454,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 city: p.city,
                 state: p.state,
                 mobile: p.mobile || p.mobile_number || '',
-                photoUrl: p.photo_url,
-                pdfUrl: p.pdf_url,
-                isImageBioData: p.is_image_biodata
+                photoUrl: p.photo_url || p.photoUrl,
+                pdfUrl: p.pdf_url || p.pdfUrl,
+                isImageBioData: p.is_image_biodata || p.isImageBioData || false
             }));
 
-            console.log(`Fetched ${data.length} profiles from Supabase.`);
+            console.log(`Fetched ${data.length} profiles from Firebase.`);
             return true;
         } catch (err) {
-            console.error("Exception fetching from Supabase:", err);
+            console.error("Exception fetching from Firebase:", err);
             return false;
         }
     }
 
     async function initApp() {
-        checkSupabase();
+        checkFirebase();
         loadLocalStorage();
         setupTheme();
         
@@ -485,15 +485,14 @@ document.addEventListener('DOMContentLoaded', () => {
             seedProfiles = [];
         }
 
-        if (isSupabaseEnabled) {
-            const success = await fetchProfilesFromSupabase();
+        if (isFirebaseEnabled) {
+            const success = await fetchProfilesFromFirebase();
             if (success) {
-                // Supabase is the source of truth; do not add local JSON profiles to activeProfiles
-                // to avoid duplication since they should be seeded to Supabase.
+                // Firebase is the source of truth
                 seedProfiles = [];
             } else {
-                console.warn("Supabase fetch failed. Falling back to local data.");
-                isSupabaseEnabled = false;
+                console.warn("Firebase fetch failed. Falling back to local data.");
+                isFirebaseEnabled = false;
                 // Force status badge update to offline
                 const statusBadge = document.getElementById('admin-db-status');
                 const seedBtn = document.getElementById('admin-seed-btn');
@@ -560,7 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderProfilesGrid() {
+    let displayLimit = 10;
+
+    function renderProfilesGrid(resetPagination = true) {
+        if (resetPagination) {
+            displayLimit = 10;
+        }
         profilesGrid.innerHTML = '';
         
         const filtered = activeProfiles.filter(profile => {
@@ -641,9 +645,45 @@ document.addEventListener('DOMContentLoaded', () => {
         recentProfilesGrid.innerHTML = '';
         profilesGrid.style.display = 'grid';
         profilesGrid.innerHTML = '';
-        filtered.forEach(profile => {
+        
+        const profilesToRender = filtered.slice(0, displayLimit);
+        profilesToRender.forEach(profile => {
             profilesGrid.appendChild(createProfileCard(profile));
         });
+
+        // Add Load More button / Infinite Scroll sentinel if there are more profiles to show
+        if (filtered.length > displayLimit) {
+            const loadMoreContainer = document.createElement('div');
+            loadMoreContainer.id = 'load-more-container';
+            loadMoreContainer.className = 'load-more-container';
+            loadMoreContainer.style.gridColumn = '1 / -1';
+            loadMoreContainer.style.textAlign = 'center';
+            loadMoreContainer.style.padding = '2rem 1rem';
+
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.className = 'secondary-btn';
+            loadMoreBtn.style.minWidth = '200px';
+            loadMoreBtn.textContent = 'વધુ બાયોડેટા લોડ કરો (Load More)';
+            loadMoreBtn.addEventListener('click', () => {
+                displayLimit += 10;
+                renderProfilesGrid(false);
+            });
+
+            loadMoreContainer.appendChild(loadMoreBtn);
+            profilesGrid.appendChild(loadMoreContainer);
+
+            // Infinite Scroll using IntersectionObserver
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        observer.disconnect();
+                        displayLimit += 10;
+                        renderProfilesGrid(false);
+                    }
+                }, { threshold: 0.1, rootMargin: '100px' });
+                observer.observe(loadMoreBtn);
+            }
+        }
 
         renderActiveFiltersPills();
     }
@@ -680,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let avatarHtml = '';
         if (profile.photoUrl) {
-            avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="horizontal-avatar-image">`;
+            avatarHtml = `<img src="${profile.photoUrl}" alt="${profile.name}" class="horizontal-avatar-image" loading="lazy">`;
         } else {
             avatarHtml = getInitials(profile.name);
         }
@@ -1332,7 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnText.style.display = 'none';
         spinner.style.display = 'block';
 
-        if (isSupabaseEnabled) {
+        if (isFirebaseEnabled) {
             try {
                 const timestamp = Date.now();
                 const submissionId = `submit_${timestamp}`;
@@ -1340,58 +1380,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. Upload Photo to Storage
                 const photoExt = tempPhotoFile.name.split('.').pop() || 'png';
                 const photoPath = `photos/photo_${timestamp}.${photoExt}`;
+                const photoRef = firebaseStorage.ref().child(photoPath);
                 
-                const { error: photoUploadError } = await supabaseClient
-                    .storage
-                    .from('sagpan-setu')
-                    .upload(photoPath, tempPhotoFile, { cacheControl: '31536000' });
-
-                if (photoUploadError) throw photoUploadError;
-
-                const { data: photoData } = supabaseClient
-                    .storage
-                    .from('sagpan-setu')
-                    .getPublicUrl(photoPath);
-
-                const finalPhotoUrl = photoData.publicUrl;
+                const metadata = { cacheControl: 'public,max-age=31536000' };
+                await photoRef.put(tempPhotoFile, { customMetadata: metadata });
+                const finalPhotoUrl = await photoRef.getDownloadURL();
 
                 // 2. Upload Bio-data to Storage
                 const pdfExt = tempPdfFile.name.split('.').pop() || 'pdf';
                 const pdfPath = `biodatas/biodata_${timestamp}.${pdfExt}`;
-
-                const { error: pdfUploadError } = await supabaseClient
-                    .storage
-                    .from('sagpan-setu')
-                    .upload(pdfPath, tempPdfFile, { cacheControl: '31536000' });
-
-                if (pdfUploadError) throw pdfUploadError;
-
-                const { data: pdfData } = supabaseClient
-                    .storage
-                    .from('sagpan-setu')
-                    .getPublicUrl(pdfPath);
-
-                const finalPdfUrl = pdfData.publicUrl;
+                const pdfRef = firebaseStorage.ref().child(pdfPath);
+                await pdfRef.put(tempPdfFile, { customMetadata: metadata });
+                const finalPdfUrl = await pdfRef.getDownloadURL();
 
                 // 3. Insert record into database
-                const { error: insertError } = await supabaseClient
-                    .from('profiles')
-                    .insert([{
-                        id: submissionId,
-                        name: name,
-                        gender: gender,
-                        age: age,
-                        education: education,
-                        mobile: normalizedMobile,
-                        city: city,
-                        state: state,
-                        photo_url: finalPhotoUrl,
-                        pdf_url: finalPdfUrl,
-                        is_image_biodata: tempIsImageBioData,
-                        status: 'pending'
-                    }]);
-
-                if (insertError) throw insertError;
+                await firebaseDb.collection('profiles').doc(submissionId).set({
+                    id: submissionId,
+                    name: name,
+                    gender: gender,
+                    age: age,
+                    education: education,
+                    mobile: normalizedMobile,
+                    city: city,
+                    state: state,
+                    photo_url: finalPhotoUrl,
+                    pdf_url: finalPdfUrl,
+                    is_image_biodata: tempIsImageBioData,
+                    status: 'pending',
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
                 // Success
                 submissionForm.reset();
@@ -1401,14 +1418,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Re-fetch tables if admin authenticated
                 if (sessionStorage.getItem('soulsync_admin_auth') === 'true') {
-                    await fetchProfilesFromSupabase();
+                    await fetchProfilesFromFirebase();
                     combineProfiles();
                     updateStats();
                     renderPendingTable();
                     renderLiveTable();
                 }
             } catch (err) {
-                console.error("Supabase upload error:", err);
+                console.error("Firebase upload error:", err);
                 showSubmitAlert(`ડેટાબેઝ અપલોડ ભૂલ: ${err.message || err}`, "danger");
             } finally {
                 submitProfileBtn.disabled = false;
@@ -1471,8 +1488,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showAdminDashboard() {
         adminLoginView.style.display = 'none';
         adminDashboardView.style.display = 'block';
-        if (isSupabaseEnabled) {
-            fetchProfilesFromSupabase().then(() => {
+        if (isFirebaseEnabled) {
+            fetchProfilesFromFirebase().then(() => {
                 combineProfiles();
                 populateFilterDropdowns();
                 renderProfilesGrid();
@@ -1507,29 +1524,23 @@ document.addEventListener('DOMContentLoaded', () => {
         loginErrorMsg.style.display = 'none';
         loginErrorMsg.textContent = '';
 
-        // Check if Supabase is active
-        if (!isSupabaseEnabled || !supabaseClient) {
-            loginErrorMsg.textContent = "ડેટાબેઝ જોડાણ ઉપલબ્ધ નથી (Supabase Offline).";
+        // Check if Firebase is active
+        if (!isFirebaseEnabled || !firebaseAuth) {
+            loginErrorMsg.textContent = "ડેટાબેઝ જોડાણ ઉપલબ્ધ નથી (Firebase Offline).";
             loginErrorMsg.style.display = 'block';
             return;
         }
 
         try {
-            // Use Supabase authentication system
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
-
-            if (error) {
-                throw error;
-            }
+            // Use Firebase authentication system
+            const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+            const user = userCredential.user;
 
             // Successful Login
-            if (data.user) {
+            if (user) {
                 // Save token tracking to SessionStorage
                 sessionStorage.setItem('soulsync_admin_auth', 'true');
-                sessionStorage.setItem('soulsync_admin_user', JSON.stringify(data.user));
+                sessionStorage.setItem('soulsync_admin_user', JSON.stringify({ uid: user.uid, email: user.email }));
                 
                 // Clear inputs
                 adminEmailInput.value = '';
@@ -1860,44 +1871,47 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmBtn.disabled = true;
         confirmBtn.textContent = "પબ્લિશ થઈ રહ્યું છે...";
 
-        if (isSupabaseEnabled) {
+        if (isFirebaseEnabled) {
             try {
                 let finalPhotoUrl = tempEditPhotoBase64;
                 let finalPdfUrl = activeEditingSubmission ? activeEditingSubmission.pdfUrl : (activeEditingLiveProfile ? activeEditingLiveProfile.pdfUrl : null);
                 let finalIsImageBioData = activeEditingSubmission ? activeEditingSubmission.isImageBioData : (activeEditingLiveProfile ? activeEditingLiveProfile.isImageBioData : false);
+
+                const decodeFirebaseStorageUrl = (url) => {
+                    if (!url || !url.includes('firebasestorage.googleapis.com')) return null;
+                    try {
+                        const match = url.split('/o/')[1];
+                        if (match) {
+                            const pathEncoded = match.split('?')[0];
+                            return decodeURIComponent(pathEncoded);
+                        }
+                    } catch (err) {
+                        console.warn("Failed to decode storage URL:", err);
+                    }
+                    return null;
+                };
 
                 // Upload new pdf/image biodata if it was selected
                 if (tempEditPdfFile) {
                     const timestamp = Date.now();
                     const pdfExt = tempEditPdfFile.name.split('.').pop() || 'pdf';
                     const pdfPath = `biodatas/biodata_${timestamp}.${pdfExt}`;
-
-                    const { error: pdfUploadError } = await supabaseClient
-                        .storage
-                        .from('sagpan-setu')
-                        .upload(pdfPath, tempEditPdfFile, { cacheControl: '31536000' });
-
-                    if (pdfUploadError) throw pdfUploadError;
-
-                    const { data: pdfData } = supabaseClient
-                        .storage
-                        .from('sagpan-setu')
-                        .getPublicUrl(pdfPath);
-
-                    finalPdfUrl = pdfData.publicUrl;
+                    const pdfRef = firebaseStorage.ref().child(pdfPath);
+                    
+                    const metadata = { cacheControl: 'public,max-age=31536000' };
+                    await pdfRef.put(tempEditPdfFile, { customMetadata: metadata });
+                    finalPdfUrl = await pdfRef.getDownloadURL();
                     finalIsImageBioData = tempEditIsImageBioData;
 
                     // Cleanup old file
                     try {
                         let oldPdfUrl = activeEditingSubmission ? activeEditingSubmission.pdfUrl : (activeEditingLiveProfile ? activeEditingLiveProfile.pdfUrl : null);
-                        if (oldPdfUrl && oldPdfUrl.includes('supabase.co')) {
-                            const oldPath = oldPdfUrl.split('/storage/v1/object/public/sagpan-setu/')[1];
-                            if (oldPath) {
-                                await supabaseClient.storage.from('sagpan-setu').remove([oldPath]);
-                            }
+                        const oldPath = decodeFirebaseStorageUrl(oldPdfUrl);
+                        if (oldPath) {
+                            await firebaseStorage.ref().child(oldPath).delete();
                         }
                     } catch(e) {
-                        console.warn('Could not delete old bio data:', e);
+                         console.warn('Could not delete old bio data:', e);
                     }
                 }
 
@@ -1906,64 +1920,45 @@ document.addEventListener('DOMContentLoaded', () => {
                     const timestamp = Date.now();
                     const photoExt = tempEditPhotoFile.name.split('.').pop() || 'png';
                     const photoPath = `photos/photo_${timestamp}.${photoExt}`;
+                    const photoRef = firebaseStorage.ref().child(photoPath);
 
-                    const { error: photoUploadError } = await supabaseClient
-                        .storage
-                        .from('sagpan-setu')
-                        .upload(photoPath, tempEditPhotoFile, { cacheControl: '31536000' });
-
-                    if (photoUploadError) throw photoUploadError;
-
-                    const { data: photoData } = supabaseClient
-                        .storage
-                        .from('sagpan-setu')
-                        .getPublicUrl(photoPath);
-
-                    finalPhotoUrl = photoData.publicUrl;
+                    const metadata = { cacheControl: 'public,max-age=31536000' };
+                    await photoRef.put(tempEditPhotoFile, { customMetadata: metadata });
+                    finalPhotoUrl = await photoRef.getDownloadURL();
                 }
 
                 if (activeEditingSubmission) {
-                    const { error: updateError } = await supabaseClient
-                        .from('profiles')
-                        .update({
-                            name: approvedName,
-                            gender: approvedGender,
-                            age: approvedAge,
-                            education: approvedEducation,
-                            mobile: normalizedApprovedMobile,
-                            city: approvedCity,
-                            state: approvedState,
-                            photo_url: finalPhotoUrl || activeEditingSubmission.photoUrl,
-                            pdf_url: finalPdfUrl,
-                            is_image_biodata: finalIsImageBioData,
-                            status: 'approved'
-                        })
-                        .eq('id', activeEditingSubmission.id);
-
-                    if (updateError) throw updateError;
+                    await firebaseDb.collection('profiles').doc(activeEditingSubmission.id).update({
+                        name: approvedName,
+                        gender: approvedGender,
+                        age: approvedAge,
+                        education: approvedEducation,
+                        mobile: normalizedApprovedMobile,
+                        city: approvedCity,
+                        state: approvedState,
+                        photo_url: finalPhotoUrl || activeEditingSubmission.photoUrl,
+                        pdf_url: finalPdfUrl,
+                        is_image_biodata: finalIsImageBioData,
+                        status: 'approved'
+                    });
 
                 } else if (activeEditingLiveProfile) {
-                    const { error: updateError } = await supabaseClient
-                        .from('profiles')
-                        .update({
-                            name: approvedName,
-                            gender: approvedGender,
-                            age: approvedAge,
-                            education: approvedEducation,
-                            mobile: normalizedApprovedMobile,
-                            city: approvedCity,
-                            state: approvedState,
-                            photo_url: finalPhotoUrl || activeEditingLiveProfile.photoUrl,
-                            pdf_url: finalPdfUrl,
-                            is_image_biodata: finalIsImageBioData
-                        })
-                        .eq('id', activeEditingLiveProfile.id);
-
-                    if (updateError) throw updateError;
+                    await firebaseDb.collection('profiles').doc(activeEditingLiveProfile.id).update({
+                        name: approvedName,
+                        gender: approvedGender,
+                        age: approvedAge,
+                        education: approvedEducation,
+                        mobile: normalizedApprovedMobile,
+                        city: approvedCity,
+                        state: approvedState,
+                        photo_url: finalPhotoUrl || activeEditingLiveProfile.photoUrl,
+                        pdf_url: finalPdfUrl,
+                        is_image_biodata: finalIsImageBioData
+                    });
                 }
 
                 tempEditPhotoFile = null;
-                await fetchProfilesFromSupabase();
+                await fetchProfilesFromFirebase();
                 combineProfiles();
                 populateFilterDropdowns();
                 renderProfilesGrid();
@@ -1973,7 +1968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderLiveTable();
 
             } catch (err) {
-                console.error("Supabase approval update error:", err);
+                console.error("Firebase approval update error:", err);
                 alert(`અપડેટ કરવામાં ભૂલ આવી: ${err.message || err}`);
             } finally {
                 confirmBtn.disabled = false;
@@ -2050,35 +2045,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function rejectSubmission(id) {
         if (confirm("શું તમે ખરેખર આ સબમિશનને નામંજૂર કરીને કાયમ માટે ડિલીટ કરવા માંગો છો?")) {
-            if (isSupabaseEnabled) {
+            if (isFirebaseEnabled) {
                 try {
                     const profileToDelete = pendingSubmissions.find(p => p.id === id);
 
-                    const { error } = await supabaseClient
-                        .from('profiles')
-                        .delete()
-                        .eq('id', id);
+                    await firebaseDb.collection('profiles').doc(id).delete();
 
-                    if (error) throw error;
+                    const decodeFirebaseStorageUrl = (url) => {
+                        if (!url || !url.includes('firebasestorage.googleapis.com')) return null;
+                        try {
+                            const match = url.split('/o/')[1];
+                            if (match) {
+                                const pathEncoded = match.split('?')[0];
+                                return decodeURIComponent(pathEncoded);
+                            }
+                        } catch (err) {
+                            console.warn("Failed to decode storage URL:", err);
+                        }
+                        return null;
+                    };
 
-                    // Delete files from storage if hosted on Supabase
+                    // Delete files from storage if hosted on Firebase
                     if (profileToDelete) {
                         try {
-                            const bucketPrefix = `${SUPABASE_CONFIG.URL}/storage/v1/object/public/sagpan-setu/`;
-                            if (profileToDelete.photoUrl && profileToDelete.photoUrl.startsWith(bucketPrefix)) {
-                                const photoPath = profileToDelete.photoUrl.replace(bucketPrefix, '');
-                                await supabaseClient.storage.from('sagpan-setu').remove([photoPath]);
+                            const photoPath = decodeFirebaseStorageUrl(profileToDelete.photoUrl);
+                            if (photoPath) {
+                                await firebaseStorage.ref().child(photoPath).delete();
                             }
-                            if (profileToDelete.pdfUrl && profileToDelete.pdfUrl.startsWith(bucketPrefix)) {
-                                const pdfPath = profileToDelete.pdfUrl.replace(bucketPrefix, '');
-                                await supabaseClient.storage.from('sagpan-setu').remove([pdfPath]);
+                            const pdfPath = decodeFirebaseStorageUrl(profileToDelete.pdfUrl);
+                            if (pdfPath) {
+                                await firebaseStorage.ref().child(pdfPath).delete();
                             }
                         } catch (storageErr) {
                             console.warn("Could not delete associated files from Storage:", storageErr);
                         }
                     }
 
-                    await fetchProfilesFromSupabase();
+                    await fetchProfilesFromFirebase();
                     combineProfiles();
                     populateFilterDropdowns();
                     renderProfilesGrid();
@@ -2086,7 +2089,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderPendingTable();
                     renderLiveTable();
                 } catch (err) {
-                    console.error("Supabase delete error:", err);
+                    console.error("Firebase delete error:", err);
                     alert(`ડિલીટ કરવામાં ભૂલ આવી: ${err.message || err}`);
                 }
             } else {
@@ -2104,42 +2107,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function deleteLiveSubmission(id) {
         if (confirm("શું તમે ખરેખર આ પ્રોફાઇલને ડિરેક્ટરીમાંથી કાયમ માટે ડિલીટ કરવા માંગો છો?")) {
-            if (isSupabaseEnabled) {
+            if (isFirebaseEnabled) {
                 try {
                     const profileToDelete = approvedProfiles.find(p => p.id === id);
 
-                    const { error } = await supabaseClient
-                        .from('profiles')
-                        .delete()
-                        .eq('id', id);
+                    await firebaseDb.collection('profiles').doc(id).delete();
 
-                    if (error) throw error;
+                    const decodeFirebaseStorageUrl = (url) => {
+                        if (!url || !url.includes('firebasestorage.googleapis.com')) return null;
+                        try {
+                            const match = url.split('/o/')[1];
+                            if (match) {
+                                const pathEncoded = match.split('?')[0];
+                                return decodeURIComponent(pathEncoded);
+                            }
+                        } catch (err) {
+                            console.warn("Failed to decode storage URL:", err);
+                        }
+                        return null;
+                    };
 
-                    // Delete files from storage if hosted on Supabase
+                    // Delete files from storage if hosted on Firebase
                     if (profileToDelete) {
                         try {
-                            const bucketPrefix = `${SUPABASE_CONFIG.URL}/storage/v1/object/public/sagpan-setu/`;
-                            if (profileToDelete.photoUrl && profileToDelete.photoUrl.startsWith(bucketPrefix)) {
-                                const photoPath = profileToDelete.photoUrl.replace(bucketPrefix, '');
-                                await supabaseClient.storage.from('sagpan-setu').remove([photoPath]);
+                            const photoPath = decodeFirebaseStorageUrl(profileToDelete.photoUrl);
+                            if (photoPath) {
+                                await firebaseStorage.ref().child(photoPath).delete();
                             }
-                            if (profileToDelete.pdfUrl && profileToDelete.pdfUrl.startsWith(bucketPrefix)) {
-                                const pdfPath = profileToDelete.pdfUrl.replace(bucketPrefix, '');
-                                await supabaseClient.storage.from('sagpan-setu').remove([pdfPath]);
+                            const pdfPath = decodeFirebaseStorageUrl(profileToDelete.pdfUrl);
+                            if (pdfPath) {
+                                await firebaseStorage.ref().child(pdfPath).delete();
                             }
                         } catch (storageErr) {
                             console.warn("Could not delete associated files from Storage:", storageErr);
                         }
                     }
 
-                    await fetchProfilesFromSupabase();
+                    await fetchProfilesFromFirebase();
                     combineProfiles();
                     populateFilterDropdowns();
                     renderProfilesGrid();
                     updateStats();
                     renderLiveTable();
                 } catch (err) {
-                    console.error("Supabase delete error:", err);
+                    console.error("Firebase delete error:", err);
                     alert(`ડિલીટ કરવામાં ભૂલ આવી: ${err.message || err}`);
                 }
             } else {
@@ -2162,9 +2173,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Seed Data event listener
     if (adminSeedBtn) {
         adminSeedBtn.addEventListener('click', async () => {
-            if (!isSupabaseEnabled) return;
+            if (!isFirebaseEnabled) return;
             
-            if (confirm("શું તમે ખરેખર mock ડેટાબેઝ (biodatas.json) માંથી બધી પ્રોફાઇલ્સને Supabase ડેટાબેઝમાં અપલોડ કરવા માંગો છો?")) {
+            if (confirm("શું તમે ખરેખર mock ડેટાબેઝ (biodatas.json) માંથી બધી પ્રોફાઇલ્સને Firebase ડેટાબેઝમાં અપલોડ કરવા માંગો છો?")) {
                 adminSeedBtn.disabled = true;
                 adminSeedBtn.textContent = "સેડિંગ ચાલુ છે...";
 
@@ -2176,32 +2187,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     let successCount = 0;
                     for (const seed of localSeeds) {
-                        const { error } = await supabaseClient
-                            .from('profiles')
-                            .insert([{
-                                id: seed.id,
-                                name: seed.name,
-                                gender: seed.gender,
-                                age: seed.age,
-                                city: seed.city,
-                                state: seed.state,
-                                photo_url: seed.photoUrl || "",
-                                pdf_url: seed.pdfUrl,
-                                is_image_biodata: seed.isImageBioData || false,
-                                status: 'approved'
-                            }]);
-                        
-                        if (error) {
-                            console.error(`Error seeding profile ${seed.name}:`, error);
-                        } else {
-                            successCount++;
-                        }
+                        await firebaseDb.collection('profiles').doc(seed.id).set({
+                            id: seed.id,
+                            name: seed.name,
+                            gender: seed.gender,
+                            age: seed.age,
+                            city: seed.city,
+                            state: seed.state,
+                            photo_url: seed.photoUrl || "",
+                            pdf_url: seed.pdfUrl,
+                            is_image_biodata: seed.isImageBioData || false,
+                            status: 'approved',
+                            created_at: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        successCount++;
                     }
 
-                    alert(`સફળતાપૂર્વક ${successCount} પ્રોફાઇલ્સ Supabase ડેટાબેઝમાં અપલોડ કરવામાં આવી છે.`);
+                    alert(`સફળતાપૂર્વક ${successCount} પ્રોફાઇલ્સ Firebase ડેટાબેઝમાં અપલોડ કરવામાં આવી છે.`);
                     
-                    // Reload data from Supabase
-                    await fetchProfilesFromSupabase();
+                    // Reload data from Firebase
+                    await fetchProfilesFromFirebase();
                     combineProfiles();
                     populateFilterDropdowns();
                     renderProfilesGrid();
